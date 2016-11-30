@@ -210,11 +210,54 @@ class ListableTest extends \PHPUnit_Framework_TestCase
 		$this->assertEquals($expectedResult, $result);
 	}
 
-	public function testListableGetWithDefault() {
-		$expectedResult = 'something';
-		$my_listable = new \Listable\Listable([ 'bar' => 'yolo', 'baz' => 'grrr' ]);
+	public function testListableFlatmap() {
+		$expectedResult = [ 2, 2, 3, 4, 5];
+		$my_listable = new \Listable\Listable([ 1, [ 1,2, [3,4]] ]);
 
-		$result = $my_listable->get( 'barr', 'something' );
+		$result = $my_listable->flatMap( function( $item ) {
+			return $item + 1;
+		} )->all();
 		$this->assertEquals($expectedResult, $result);
 	}
+
+	public function testListablePluck() {
+		$testArray = [
+			[ 'bar' => 'yolo', 'another' => 'boo' ],
+			[ 'bar' => 'grrr', 'something' => 'test' ]
+		];
+		$expectedResult = [ 'yolo', 'grrr' ];
+		$my_listable = new \Listable\Listable( $testArray );
+
+		$result = $my_listable->pluck( 'bar' )->all();
+		$this->assertEquals($expectedResult, $result);
+	}
+
+	public function testListableGetWithDefault() {
+		$expectedResult = 'yolo';
+		$my_listable = new \Listable\Listable([ 'bar' => 'yolo', 'baz' => 'grrr' ]);
+
+		$result = $my_listable->get( 'bar' );
+		$this->assertEquals($expectedResult, $result);
+	}
+
+	public function testListableSumWithNumbers() {
+		$expectedResult = 9;
+		$my_listable = new \Listable\Listable([ 2, 4, 3 ]);
+
+		$result = $my_listable->sum();
+		$this->assertEquals($expectedResult, $result);
+	}
+
+	public function testListablePick() {
+		$testArray = [
+				[ 'bar' => 'yolo', 'another' => 'boo' ],
+				[ 'bar' => 'grrr', 'something' => 'test' ]
+		];
+		$expectedResult = [ ['yolo'], [ 'grrr', 'test'] ];
+		$my_listable = new \Listable\Listable( $testArray );
+
+		$result = $my_listable->pick( [ 'bar', 'something' ] )->all();
+		$this->assertEquals($expectedResult, $result);
+	}
+
 }

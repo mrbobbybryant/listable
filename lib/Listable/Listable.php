@@ -131,6 +131,36 @@ class Listable {
 		return $this;
 	}
 
+	public function flatMap( $callback ) {
+		$flat = Loops::flatten( $this->items );
+		$this->items = Loops::map( $flat, $callback );
+		return $this;
+	}
+
+	public function pluck( $key, $default = null ) {
+		$this->items = Loops::map( $this->items, function( $item ) use ( $key ) {
+			if ( array_key_exists( $key, $item ) ) {
+				return $item[ $key ];
+			}
+		});
+		return $this;
+	}
+
+	public function pick( $keys, $default = null ) {
+		$this->items = Loops::map( $this->items, function( $item ) use($keys) {
+			return array_filter( Loops::map( $keys, function($key) use($item) {
+				if ( array_key_exists( $key, $item ) ) {
+					return $item[$key];
+				}
+
+			} ) );
+		} );
+
+		return $this;
+	}
+
+
+
 	public function get( $key, $default = null ) {
 
 		if ( array_key_exists( $key, $this->items ) ) {
@@ -138,5 +168,11 @@ class Listable {
 		}
 
 		return $default;
+	}
+
+	public function sum() {
+		return Loops::reduce( $this->items, function( $prev, $next ) {
+			return $prev + $next;
+		}, 0 );
 	}
 }
