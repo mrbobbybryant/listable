@@ -7,5 +7,5 @@ namespace Listable\Helper;
  * @return new List
  */
 function listable( $value = null ) {
-	return new \Listable\Base\Listable( $value );
+	return new \Listable\Listable( $value );
 }
