@@ -47,4 +47,10 @@ class Loops {
 		},[] ) : [ $items ];
 	}
 
+	public static function each( $items, $callback ) {
+		foreach( $items as $key => $item ) {
+			$callback( $item, $key );
+		}
+	}
+
 }
