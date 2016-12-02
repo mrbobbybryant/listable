@@ -220,11 +220,28 @@ class ListableTest extends \PHPUnit_Framework_TestCase
 		$this->assertEquals($expectedResult, $result);
 	}
 
-	public function testListablePluck() {
+	public function testListablePluckWithArray() {
 		$testArray = [
 			[ 'bar' => 'yolo', 'another' => 'boo' ],
 			[ 'bar' => 'grrr', 'something' => 'test' ]
 		];
+		$expectedResult = [ 'yolo', 'grrr' ];
+		$my_listable = new \Listable\Listable( $testArray );
+
+		$result = $my_listable->pluck( 'bar' )->all();
+		$this->assertEquals($expectedResult, $result);
+	}
+
+	public function testListablePluckWithObjects() {
+		$obj1 = new stdClass();
+		$obj1->bar = 'yolo';
+		$obj1->another = 'boo';
+
+		$obj2 = new stdClass();
+		$obj2->bar = 'grrr';
+		$obj2->something = 'test';
+		$testArray = [ $obj1, $obj2 ];
+
 		$expectedResult = [ 'yolo', 'grrr' ];
 		$my_listable = new \Listable\Listable( $testArray );
 
@@ -248,7 +265,7 @@ class ListableTest extends \PHPUnit_Framework_TestCase
 		$this->assertEquals($expectedResult, $result);
 	}
 
-	public function testListablePick() {
+	public function testListablePickWithMultidemensionalArray() {
 		$testArray = [
 				[ 'bar' => 'yolo', 'another' => 'boo' ],
 				[ 'bar' => 'grrr', 'something' => 'test' ]
@@ -257,6 +274,42 @@ class ListableTest extends \PHPUnit_Framework_TestCase
 		$my_listable = new \Listable\Listable( $testArray );
 
 		$result = $my_listable->pick( [ 'bar', 'something' ] )->all();
+		$this->assertEquals($expectedResult, $result);
+	}
+
+	public function testListablePickWithObject() {
+		$obj1 = new stdClass();
+		$obj1->bar = 'yolo';
+		$obj1->another = 'boo';
+
+		$obj2 = new stdClass();
+		$obj2->bar = 'grrr';
+		$obj2->something = 'test';
+		$testArray = [ $obj1, $obj2 ];
+
+		$obj3 = new stdClass();
+		$obj3->bar = 'grrr';
+		$obj3->something = 'test';
+
+		$obj4 = new stdClass();
+		$obj4->bar = 'yolo';
+
+		$expectedResult = [ $obj4, $obj3 ];
+		$my_listable = new \Listable\Listable( $testArray );
+
+		$result = $my_listable->pick( [ 'bar', 'something' ] )->all();
+		$this->assertEquals($expectedResult, $result);
+	}
+
+	public function testListablePickWithStandardArray() {
+		$testArray = [
+			'bar' => 'yolo',
+			'another' => 'boo'
+		];
+		$expectedResult = [ 'yolo' ];
+		$my_listable = new \Listable\Listable( $testArray );
+
+		$result = $my_listable->pick( [ 'bar', 'something' ] );
 		$this->assertEquals($expectedResult, $result);
 	}
 
