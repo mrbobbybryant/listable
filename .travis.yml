@@ -7,3 +7,6 @@ script:
   - php composer.phar self-update
   - php composer.phar install --dev
   - ./vendor/bin/phpunit
+  
+after_success:
+  - travis_retry php vendor/bin/coveralls

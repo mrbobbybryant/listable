@@ -17,5 +17,8 @@
 		"psr-0": {
 			"Listable": "lib/"
 		}
+	},
+	"require": {
+		"satooshi/php-coveralls": "^1.0"
 	}
 }
