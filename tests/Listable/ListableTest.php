@@ -313,4 +313,59 @@ class ListableTest extends \PHPUnit_Framework_TestCase
 		$this->assertEquals($expectedResult, $result);
 	}
 
+	public function testListableGroupByStandardArray() {
+		$testArray = [ 4.2, 6.1, 6.4 ];
+		$expectedResult = [ 4 => [ 4.2 ], 6 => [ 6.1, 6.4 ] ];
+		$my_listable = new \Listable\Listable( $testArray );
+
+		$result = $my_listable->groupBy( 'floor' )->all();
+		$this->assertEquals($expectedResult, $result);
+	}
+
+	public function testListableGroupByAssocArrays() {
+		$testArray = [
+			[ 'team' => 'A', 'score' => 91 ],
+			[ 'team' => 'B', 'score' => 86 ],
+			[ 'team' => 'C', 'score' => 86 ]
+		];
+		$expectedResult = [
+			91 => [ 0 => [ 'team' => 'A', 'score' => 91 ] ],
+			86 => [
+				0 => [ 'team' => 'B', 'score' => 86 ],
+				1 => [ 'team' => 'C', 'score' => 86 ]
+			]
+		];
+		$my_listable = new \Listable\Listable( $testArray );
+
+		$result = $my_listable->groupBy( 'floor', 'score' )->all();
+		$this->assertEquals($expectedResult, $result);
+	}
+
+	public function testListableGroupByArrayObjects() {
+		$team1 = new stdClass();
+		$team1->name = 'A';
+		$team1->score = 91;
+
+		$team2 = new stdClass();
+		$team2->name = 'B';
+		$team2->score = 86;
+
+		$team3 = new stdClass();
+		$team3->name = 'C';
+		$team3->score = 86;
+
+		$testArray = [ $team1, $team2, $team3 ];
+		$expectedResult = [
+			91 => [ 0 => $team1 ],
+			86 => [
+				0 => $team2,
+				1 => $team3
+			]
+		];
+		$my_listable = new \Listable\Listable( $testArray );
+
+		$result = $my_listable->groupBy( 'floor', 'score' )->all();
+		$this->assertEquals($expectedResult, $result);
+	}
+
 }

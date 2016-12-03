@@ -2,6 +2,8 @@
 
 namespace Listable;
 
+use SebastianBergmann\CodeCoverage\Util;
+
 class Listable {
 	protected $items = [];
 
@@ -270,5 +272,70 @@ class Listable {
 		}
 
 		return [];
+	}
+
+	public function groupBy( $iterator, $key = null ) {
+		$this->items = Loops::reduce( $this->items, function( $prev, $next, $index, $arr ) use ( $iterator, $key ) {
+			if ( Utilities::isAssociative( $next ) && ! is_null( $key ) ) {
+				$result = $this->groupByAssocArray( $next, $iterator, $key );
+
+				if ( ! is_null( $result ) ) {
+					$prev[$result][] = $next;
+				}
+
+				return $prev;
+			}
+
+			if ( is_object( $next ) && ! is_null( $key ) ) {
+				$result = $this->groupByObjectKey( $next, $iterator, $key );
+
+				if ( ! is_null( $result ) ) {
+					$prev[$result][] = $next;
+				}
+
+				return $prev;
+			}
+			if ( ! Utilities::isAssociative( $arr ) && ! Utilities::isMultidemensional( $arr ) ) {
+				$result = $this->groupByStandardArray( $next, $iterator );
+
+				if ( ! is_null( $result ) ) {
+					$prev[$result][] = $next;
+				}
+
+				return $prev;
+			}
+			return $prev;
+
+		}, [] );
+
+		return $this;
+
+	}
+
+	protected function groupByStandardArray( $array, $iterator ) {
+		if ( is_callable( $iterator ) ) {
+			return $iterator( $array );
+		} else {
+			return null;
+		}
+
+	}
+
+	protected function groupByAssocArray( $array, $iterator, $key ) {
+		if ( is_callable( $iterator  ) && array_key_exists( $key, $array ) ) {
+			return $iterator( $array[$key] );
+		} else {
+			return null;
+		}
+
+	}
+
+	protected function groupByObjectKey( $array, $iterator, $key ) {
+		if ( is_callable( $iterator ) && property_exists( $array, $key ) ) {
+			return $iterator( $array->$key );
+		} else {
+			return null;
+		}
+
 	}
 }
