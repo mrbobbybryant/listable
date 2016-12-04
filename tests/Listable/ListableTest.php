@@ -414,4 +414,208 @@ class ListableTest extends \PHPUnit_Framework_TestCase
 		$this->assertEquals($expectedResult, $result);
 	}
 
+	public function testListableChunkSizeTwo() {
+		$testArray = [ 'yolo', 'bolo', 'foo', 'bar', 'baz' ];
+		$expectedResult = [
+			['yolo', 'bolo'],
+			[ 'foo', 'bar' ],
+			[ 'baz' ]
+		];
+		$my_listable = new \Listable\Listable( $testArray );
+
+		$result = $my_listable->chunk(2)->all();
+		$this->assertEquals($expectedResult, $result);
+	}
+
+	public function testListableChunkSizeThree() {
+		$testArray = [ 'yolo', 'bolo', 'foo', 'bar', 'baz' ];
+		$expectedResult = [
+				['yolo', 'bolo', 'foo'],
+				[ 'bar', 'baz' ]
+		];
+		$my_listable = new \Listable\Listable( $testArray );
+
+		$result = $my_listable->chunk(3)->all();
+		$this->assertEquals($expectedResult, $result);
+	}
+
+	public function testListableChunkSizeZero() {
+		$testArray = [ 'yolo', 'bolo', 'foo', 'bar', 'baz' ];
+		$expectedResult = [ 'yolo', 'bolo', 'foo', 'bar', 'baz' ];
+		$my_listable = new \Listable\Listable( $testArray );
+
+		$result = $my_listable->chunk(0)->all();
+		$this->assertEquals($expectedResult, $result);
+	}
+
+	public function testListableCompactWithFalseItems() {
+		$testArray = [0, 1, false, 2, '', 3, null];
+		$expectedResult = [ 1, 2, 3 ];
+		$my_listable = new \Listable\Listable( $testArray );
+
+		$result = $my_listable->compact()->all();
+		$this->assertEquals($expectedResult, $result);
+	}
+
+	public function testListableCompactWithoutFalseItems() {
+		$testArray = [ 'foo', 1, 'bar', 2, 3 ];
+		$expectedResult = [ 'foo', 1, 'bar', 2, 3 ];
+		$my_listable = new \Listable\Listable( $testArray );
+
+		$result = $my_listable->compact()->all();
+		$this->assertEquals($expectedResult, $result);
+	}
+
+	public function testListableDifferenceWithOneArray() {
+		$testArray = [ 1, 2 ];
+		$expectedResult = [ 2 ];
+		$my_listable = new \Listable\Listable( $testArray );
+
+		$result = $my_listable->difference([ 1, 3 ])->all();
+		$this->assertEquals($expectedResult, $result);
+	}
+
+	public function testListableDifferenceWithManyArray() {
+		$testArray = [ 1, 2 ];
+		$expectedResult = [ 2 ];
+		$my_listable = new \Listable\Listable( $testArray );
+
+		$result = $my_listable->difference([ 1, 3 ], [ 1, 4 ], [ 1, 5 ])->all();
+		$this->assertEquals($expectedResult, $result);
+	}
+
+	public function testListableDifferenceWithStringValues() {
+		$testArray = [ 'foo', 'bar' ];
+		$expectedResult = [ 'bar' ];
+		$my_listable = new \Listable\Listable( $testArray );
+
+		$result = $my_listable->difference([ 'foo', 'baz' ])->all();
+		$this->assertEquals($expectedResult, $result);
+	}
+
+	public function testListableintersection() {
+		$testArray = [ 1, 2 ];
+		$expectedResult = [ 1 ];
+		$my_listable = new \Listable\Listable( $testArray );
+
+		$result = $my_listable->intersection([ 1, 3 ])->all();
+		$this->assertEquals($expectedResult, $result);
+	}
+
+	public function testListableIntersectionWithManyArray() {
+		$testArray = [ 1, 2 ];
+		$expectedResult = [ 1 ];
+		$my_listable = new \Listable\Listable( $testArray );
+
+		$result = $my_listable->intersection([ 1, 3 ], [ 1, 4 ], [ 1, 5 ])->all();
+		$this->assertEquals($expectedResult, $result);
+	}
+
+	public function testListableIntersectioneWithStringValues() {
+		$testArray = [ 'foo', 'bar' ];
+		$expectedResult = [ 'foo' ];
+		$my_listable = new \Listable\Listable( $testArray );
+
+		$result = $my_listable->intersection([ 'foo', 'baz' ])->all();
+		$this->assertEquals($expectedResult, $result);
+	}
+
+	public function testListableDrop() {
+		$testArray = [ 1, 2, 4, 3, 5 ];
+		$expectedResult = [ 4, 3, 5 ];
+		$my_listable = new \Listable\Listable( $testArray );
+
+		$result = $my_listable->drop(2)->all();
+		$this->assertEquals($expectedResult, $result);
+	}
+
+	public function testListableDropNoInput() {
+		$testArray = [ 1, 2, 4, 3, 5 ];
+		$expectedResult = [ 2, 4, 3, 5 ];
+		$my_listable = new \Listable\Listable( $testArray );
+
+		$result = $my_listable->drop()->all();
+		$this->assertEquals($expectedResult, $result);
+	}
+
+	public function testListableDropTooBig() {
+		$testArray = [ 1, 2, 4, 3, 5 ];
+		$expectedResult = [ 1, 2, 4, 3, 5 ];
+		$my_listable = new \Listable\Listable( $testArray );
+
+		$result = $my_listable->drop(6)->all();
+		$this->assertEquals($expectedResult, $result);
+	}
+
+	public function testListableDropRight() {
+		$testArray = [ 1, 2, 4, 3, 5 ];
+		$expectedResult = [ 1, 2, 4 ];
+		$my_listable = new \Listable\Listable( $testArray );
+
+		$result = $my_listable->dropRight(2)->all();
+		$this->assertEquals($expectedResult, $result);
+	}
+
+	public function testListableDropRightNoInput() {
+		$testArray = [ 1, 2, 4, 3, 5 ];
+		$expectedResult = [ 1, 2, 4, 3 ];
+		$my_listable = new \Listable\Listable( $testArray );
+
+		$result = $my_listable->dropRight()->all();
+		$this->assertEquals($expectedResult, $result);
+	}
+
+	public function testListableDropRightTooBig() {
+		$testArray = [ 1, 2, 4, 3, 5 ];
+		$expectedResult = [ 1, 2, 4, 3, 5 ];
+		$my_listable = new \Listable\Listable( $testArray );
+
+		$result = $my_listable->dropRight(6)->all();
+		$this->assertEquals($expectedResult, $result);
+	}
+
+	public function testListableDropRightWhile() {
+		$testArray = [ 1, 2, 4, 3, 5 ];
+		$expectedResult = [ 1, 2 ];
+		$my_listable = new \Listable\Listable( $testArray );
+
+		$result = $my_listable->dropRightWhile( function( $item ) {
+			return 4 > $item;
+		} )->all();
+		$this->assertEquals($expectedResult, $result);
+	}
+
+	public function testListableDropRightWhileNoResults() {
+		$testArray = [ 1, 2, 4, 3, 5 ];
+		$expectedResult = [ 1, 2, 4, 3, 5 ];
+		$my_listable = new \Listable\Listable( $testArray );
+
+		$result = $my_listable->dropRightWhile( function( $item ) {
+			return 0 === $item;
+		} )->all();
+		$this->assertEquals($expectedResult, $result);
+	}
+
+	public function testListableDropWhile() {
+		$testArray = [ 1, 2, 4, 3, 5 ];
+		$expectedResult = [ 4, 3, 5 ];
+		$my_listable = new \Listable\Listable( $testArray );
+
+		$result = $my_listable->dropWhile( function( $item ) {
+			return 4 > $item;
+		} )->all();
+		$this->assertEquals($expectedResult, $result);
+	}
+
+	public function testListableDropWhileNoResults() {
+		$testArray = [ 1, 2, 4, 3, 5 ];
+		$expectedResult = [ 1, 2, 4, 3, 5 ];
+		$my_listable = new \Listable\Listable( $testArray );
+
+		$result = $my_listable->dropRightWhile( function( $item ) {
+			return 0 === $item;
+		} )->all();
+		$this->assertEquals($expectedResult, $result);
+	}
+
 }

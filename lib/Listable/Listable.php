@@ -412,4 +412,180 @@ class Listable {
 		} );
 		return $this;
 	}
+
+	/**
+	 * Function creates an array of elements split into groups the length of size.
+	 *
+	 * If array can't be split evenly,the final chunk will be the remaining elements.
+	 * If the size is 0 then this function will simply return the original array unchanged.
+	 *
+	 * @param int $size Defaults to zero.
+	 *
+	 * @return $this Returns an instance of the listable. This allows for method chaining.
+	 */
+	public function chunk( $size = 0 ) {
+
+		if ( 0 < $size ) {
+			$result = new \stdClass();
+			$result->items = [];
+			$result->pointer = 0;
+			$results = Loops::reduce( $this->items, function( $prev, $next ) use ( $size ) {
+				$prev->items[ $prev->pointer ][] = $next;
+				if ( $size === count( $prev->items[ $prev->pointer ] ) ) {
+					$prev->pointer++;
+				}
+				return $prev;
+			}, $result );
+
+			$this->items = $results->items;
+		}
+
+		return $this;
+	}
+
+	/**
+	 * Creates an array with all falsey values removed.
+	 *
+	 * Falsey values that this function removes are 0, false, '' (empty string), and null.
+	 *
+	 * @return $this Returns an instance of the listable. This allows for method chaining.
+	 */
+	public function compact() {
+		$this->items = array_values( array_filter( $this->items ) );
+		Return $this;
+	}
+
+	/**
+	 * Function returns the difference between the Listable's internal array and an unlimited
+	 * number of input arrays.
+	 *
+	 * For example, if the Listable contains [ 1, 2 ] and we pass difference [1, 3] and [1, 5].
+	 * This function would return [2], since the number 2 is not found inside any of the input
+	 * arrays.
+	 *
+	 * @return $this Returns an instance of the listable. This allows for method chaining.
+	 */
+	public function difference() {
+		$arrays = func_get_args();
+		$this->items = $this->compareArrayItems( $arrays, $this->items, function( $item, $array ) {
+			return ! in_array( $item, $array );
+		} );
+
+		$this->items  = array_unique( $this->flatten()->all() );
+
+		return $this;
+	}
+
+	/**
+	 * Function returns the similarities between the Listable's internal array and an unlimited
+	 * number of input arrays.
+	 *
+	 * For example, if the Listable contains [ 1, 2 ] and we pass difference [1, 3] and [1, 5].
+	 * This function would return [1], since the number 1 is found inside every arrays.
+	 *
+	 * @return $this Returns an instance of the listable. This allows for method chaining.
+	 */
+	public function intersection() {
+		$arrays = func_get_args();
+
+		$this->items = $this->compareArrayItems( $arrays, $this->items, function( $item, $array ) {
+			return in_array( $item, $array );
+		} );
+		$this->items  = array_unique( $this->flatten()->all() );
+		return $this;
+	}
+
+	/**
+	 * Function allows you to compare the items between two input array. It uses an iterator
+	 * make the comparison.
+	 *
+	 * The iterator function receives an array from the multidimensional array, and one item from
+	 * the second input array($items).
+	 *
+	 * @param array $arrays An array of array. Multidimensional array.
+	 * @param array $items The second array to compare
+	 * @param callable $iterator The function used to compare items in both arrays.
+	 *
+	 * @return int
+	 */
+	protected function compareArrayItems( $arrays, $items, $iterator ) {
+		return Loops::reduce( $arrays, function( $prev, $array ) use( $items, $iterator ) {
+			$prev[] = Loops::filter( $items, function( $item ) use ( $array, $iterator ) {
+				if ( $iterator( $item, $array ) ) {
+					return $item;
+				}
+			} );
+
+			return $prev;
+
+		}, []);
+	}
+
+	/**
+	 * Function creates a slice of array with n elements dropped from the beginning.
+	 *
+	 * @param int $size The number of elements to drop from the beginning of the array.
+	 *
+	 * @return $this Returns an instance of the listable. This allows for method chaining.
+	 */
+	public function drop( $size = 1 ) {
+		if ( $size <= count( $this->items ) ) {
+			$this->items = array_slice( $this->items, $size, count( $this->items ) );
+		}
+
+		return $this;
+	}
+
+	/**
+	 * Function creates a slice of array with n elements dropped from the beginning.
+	 *
+	 * @param int $size The number of elements to drop from the end of the array.
+	 *
+	 * @return $this Returns an instance of the listable. This allows for method chaining.
+	 */
+	public function dropRight( $size = 1 ) {
+		$length = count( $this->items );
+
+		if ( $size <= $length ) {
+			$size = $length - $size;
+			$slice = $length * -1;;
+			$this->items = array_slice( $this->items, $slice, $size );
+		}
+
+		return $this;
+	}
+
+	/**
+	 * Function creates a slice of array excluding elements dropped from the beginning until
+	 * the iterator returns false. The iterator is passed the $iterator and the index of
+	 * current item.
+	 *
+	 * @param callable $iterator The function to test each value again. Must return true or false.
+	 *
+	 * @return $this Returns an instance of the listable. This allows for method chaining.
+	 */
+	public function dropWhile( $iterator ) {
+		$results = Loops::map( $this->items, $iterator );
+		$index = array_search( false, $results );
+		$this->drop( $index );
+		return $this;
+	}
+
+	/**
+	 * Function creates a slice of array excluding elements dropped from the end until
+	 * the iterator returns false. The iterator is passed the $iterator and the index of
+	 * current item.
+	 *
+	 * @param callable $iterator The function to test each value again. Must return true or false.
+	 *
+	 * @return $this Returns an instance of the listable. This allows for method chaining.
+	 */
+	public function dropRightWhile( $iterator ) {
+		$results = Loops::map( $this->items, $iterator );
+		$index = array_search( false, $results );
+		$slice = ( 0 === $index ) ? 0 : $index + 1;
+		$this->dropRight( $slice );
+		return $this;
+	}
+
 }
