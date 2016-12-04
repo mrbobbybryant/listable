@@ -274,6 +274,19 @@ class Listable {
 		return [];
 	}
 
+	/**
+	 * Function allows you to group items, array, and object based in user selected criteria.
+	 *
+	 * This function will work with standard array, multidimensional arrays, and array of
+	 * objects. Items will be grouped by applying the iterator to each item in an array, or
+	 * by applying the iterator to the specified key when working with multidimensional arrays and
+	 * arrays of objects.
+	 *
+	 * @param callable $iterator The function used to determine how items should be grouped.
+	 * @param null $key (optional) Allows you to define which key the iterator should be applied to.
+	 *
+	 * @return $this Returns an instance of the listable. This allows for method chaining.
+	 */
 	public function groupBy( $iterator, $key = null ) {
 		$this->items = Loops::reduce( $this->items, function( $prev, $next, $index, $arr ) use ( $iterator, $key ) {
 			if ( Utilities::isAssociative( $next ) && ! is_null( $key ) ) {
@@ -337,5 +350,66 @@ class Listable {
 			return null;
 		}
 
+	}
+
+	/**
+	 * Function will combine multiple arrays into two new arrays. Accepts an unimted number of
+	 * arrays to be zipped up.
+	 *
+	 * Function will combine all items from each index for all input arrays into a new array.
+	 * for example [1,2] and ['a', 'b'] would become [ [1,'a'], [2,'b'] ]
+	 *
+	 * @return $this Returns an instance of the listable. This allows for method chaining.
+	 */
+	public function zip() {
+
+		if ( 0 < count( func_get_args() ) ) {
+			$args = array_merge( [ $this->items ], func_get_args() );
+			$this->items = Loops::reduce( $args, function( $prev, $next ) {
+				for( $i = 0; $i < count( $next ); $i++ ){
+					$prev[$i][] = $next[$i];
+				}
+				return $prev;
+			}, [] );
+		}
+
+		return $this;
+	}
+
+	/**
+	 * Function does the same thing a zip but in the reverse order. So it will unzip two input arrays
+	 * into multiple new array.
+	 *
+	 * For example [ [1,'a', true], [2,'b', false] ] will become [ [1,2], ['a','b'], [true, false] ]
+	 *
+	 * @return $this Returns an instance of the listable. This allows for method chaining.
+	 */
+	public function unzip() {
+
+		if ( Utilities::isMultidemensional( $this->items ) ) {
+			$this->items = Loops::reduce( $this->items, function( $prev, $next ) {
+				for( $i = 0; $i < count( $next ); $i++ ){
+					$prev[$i][] = $next[$i];
+				}
+				return $prev;
+			}, [] );
+		}
+
+		return $this;
+	}
+
+	public function zipWith( $iterator, $args ) {
+		$args = array_merge( [ $this->items ], array_slice( func_get_args(), 1, count(func_get_args() ) ) );
+		$items = Loops::reduce( $args, function( $prev, $next ) {
+			for( $i = 0; $i < count( $next ); $i++ ){
+				$prev[$i][] = $next[$i];
+			}
+			return $prev;
+		}, [] );
+
+		$this->items = Loops::map( $items, function( $item ) use ( $iterator ) {
+			return $iterator( $item );
+		} );
+		return $this;
 	}
 }

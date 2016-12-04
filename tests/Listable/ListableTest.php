@@ -368,4 +368,50 @@ class ListableTest extends \PHPUnit_Framework_TestCase
 		$this->assertEquals($expectedResult, $result);
 	}
 
+	public function testListableZip() {
+		$testArray = [ 'yolo', 'bolo' ];
+		$expectedResult = [
+				[ 'yolo', 1, 'a' ],
+				[ 'bolo', 2, 'b' ]
+		];
+		$my_listable = new \Listable\Listable( $testArray );
+
+		$result = $my_listable->zip( [1,2], ['a','b'] )->all();
+		$this->assertEquals($expectedResult, $result);
+	}
+
+	public function testListableZipWithoutArgs() {
+		$testArray = [ 'yolo', 'bolo' ];
+		$expectedResult = [ 'yolo', 'bolo' ];
+		$my_listable = new \Listable\Listable( $testArray );
+
+		$result = $my_listable->zip()->all();
+		$this->assertEquals($expectedResult, $result);
+	}
+
+	public function testListableUnZip() {
+		$testArray = [
+				[ 'yolo', 1, 'a' ],
+				[ 'bolo', 2, 'b' ]
+		];
+		$expectedResult = [
+			[ 'yolo', 'bolo' ],
+			[ 1, 2 ],
+			[ 'a', 'b' ]
+		];
+		$my_listable = new \Listable\Listable( $testArray );
+
+		$result = $my_listable->unzip()->all();
+		$this->assertEquals($expectedResult, $result);
+	}
+
+	public function testListableUnZipWitoutArgs() {
+		$testArray = [ 'yolo', 'bolo' ];
+		$expectedResult = [ 'yolo', 'bolo' ];
+		$my_listable = new \Listable\Listable( $testArray );
+
+		$result = $my_listable->unzip()->all();
+		$this->assertEquals($expectedResult, $result);
+	}
+
 }
