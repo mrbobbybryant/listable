@@ -115,8 +115,8 @@ class Listable {
 	 *
 	 * @return $this Returns an instance of the listable. This allows for method chaining.
 	 */
-	public function flatten() {
-		$this->items = Loops::flatten( $this->items );
+	public function flatten( $depth = 0 ) {
+		$this->items = Loops::flatten( $this->items, $depth );
 		return $this;
 	}
 
@@ -132,7 +132,7 @@ class Listable {
 	 * @return $this Returns an instance of the listable. This allows for method chaining.
 	 */
 	public function flatMap( $callback ) {
-		$flat = Loops::flatten( $this->items );
+		$flat = Loops::flatten( $this->items, $depth = 0 );
 		$this->items = Loops::map( $flat, $callback );
 		return $this;
 	}
@@ -461,19 +461,20 @@ class Listable {
 	 *
 	 * For example, if the Listable contains [ 1, 2 ] and we pass difference [1, 3] and [1, 5].
 	 * This function would return [2], since the number 2 is not found inside any of the input
-	 * arrays.
+	 * arrays. This function does not mutate the Listable's array. For that take a look at pull().
 	 *
-	 * @return $this Returns an instance of the listable. This allows for method chaining.
+	 * @return array An array of all the differences.
 	 */
 	public function difference() {
 		$arrays = func_get_args();
-		$this->items = $this->compareArrayItems( $arrays, $this->items, function( $item, $array ) {
+		$results = $this->compareArrayItems( $arrays, $this->items, function( $item, $array ) {
 			return ! in_array( $item, $array );
 		} );
 
-		$this->items  = array_unique( $this->flatten()->all() );
+		$results = new self( $results );
 
-		return $this;
+		return array_unique( $results->flatten()->all() );
+
 	}
 
 	/**
@@ -481,18 +482,21 @@ class Listable {
 	 * number of input arrays.
 	 *
 	 * For example, if the Listable contains [ 1, 2 ] and we pass difference [1, 3] and [1, 5].
-	 * This function would return [1], since the number 1 is found inside every arrays.
+	 * This function would return [1], since the number 1 is found inside every arrays. This function
+	 * does not mutate the Listable's array.
 	 *
-	 * @return $this Returns an instance of the listable. This allows for method chaining.
+	 * @return array An array of all the differences.
 	 */
 	public function intersection() {
 		$arrays = func_get_args();
 
-		$this->items = $this->compareArrayItems( $arrays, $this->items, function( $item, $array ) {
+		$results = $this->compareArrayItems( $arrays, $this->items, function( $item, $array ) {
 			return in_array( $item, $array );
 		} );
-		$this->items  = array_unique( $this->flatten()->all() );
-		return $this;
+
+		$results = new self( $results );
+
+		return array_unique( $results->flatten()->all() );
 	}
 
 	/**
@@ -585,6 +589,33 @@ class Listable {
 		$index = array_search( false, $results );
 		$slice = ( 0 === $index ) ? 0 : $index + 1;
 		$this->dropRight( $slice );
+		return $this;
+	}
+
+	/**
+	 * Function removes all given values or keys from the Listablr's array.
+	 *
+	 * @param array $values An array of values to remove from array.
+	 *
+	 * This function can also accept an array of keys which can be used to remove items from
+	 * multidimensional arrays.
+	 *
+	 * @return $this Returns an instance of the listable. This allows for method chaining.
+	 */
+	public function pull( $values ) {
+		$this->items = Loops::map( $this->items, function( $item, $index ) use( $values ) {
+			if ( ! Utilities::isAssociative( $item ) ) {
+				if ( in_array( $item, $values ) ) {
+					return false;
+				}
+			} else if ( Utilities::isAssociative( $item ) ) {
+				return array_diff_key( $item, array_flip( (array) $values ) );
+			}
+
+			return $item;
+		} );
+
+		$this->items = array_values( array_filter( $this->items ) );
 		return $this;
 	}
 

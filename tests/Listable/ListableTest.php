@@ -202,6 +202,27 @@ class ListableTest extends \PHPUnit_Framework_TestCase
 		$this->assertEquals($expectedResult, $result);
 	}
 
+	public function testListableFlattenOneLevel() {
+		$testArray = [
+			[
+				[ 'name' => 'Bobby', 'age' => 27 ]
+			],
+			[
+				[ 'name' => 'John', 'age' => 29 ]
+
+			]
+		];
+
+		$expectedResult = [
+			[ 'name' => 'Bobby', 'age' => 27 ],
+			[ 'name' => 'John', 'age' => 29 ]
+		];
+		$my_listable = new \Listable\Listable($testArray);
+
+		$result = $my_listable->flatten(1)->all();
+		$this->assertEquals($expectedResult, $result);
+	}
+
 	public function testListableGetWithoutDefault() {
 		$expectedResult = 'yolo';
 		$my_listable = new \Listable\Listable([ 'bar' => 'yolo', 'baz' => 'grrr' ]);
@@ -471,7 +492,7 @@ class ListableTest extends \PHPUnit_Framework_TestCase
 		$expectedResult = [ 2 ];
 		$my_listable = new \Listable\Listable( $testArray );
 
-		$result = $my_listable->difference([ 1, 3 ])->all();
+		$result = $my_listable->difference([ 1, 3 ]);
 		$this->assertEquals($expectedResult, $result);
 	}
 
@@ -480,7 +501,7 @@ class ListableTest extends \PHPUnit_Framework_TestCase
 		$expectedResult = [ 2 ];
 		$my_listable = new \Listable\Listable( $testArray );
 
-		$result = $my_listable->difference([ 1, 3 ], [ 1, 4 ], [ 1, 5 ])->all();
+		$result = $my_listable->difference([ 1, 3 ], [ 1, 4 ], [ 1, 5 ]);
 		$this->assertEquals($expectedResult, $result);
 	}
 
@@ -489,16 +510,16 @@ class ListableTest extends \PHPUnit_Framework_TestCase
 		$expectedResult = [ 'bar' ];
 		$my_listable = new \Listable\Listable( $testArray );
 
-		$result = $my_listable->difference([ 'foo', 'baz' ])->all();
+		$result = $my_listable->difference([ 'foo', 'baz' ]);
 		$this->assertEquals($expectedResult, $result);
 	}
 
-	public function testListableintersection() {
+	public function testListableIntersection() {
 		$testArray = [ 1, 2 ];
 		$expectedResult = [ 1 ];
 		$my_listable = new \Listable\Listable( $testArray );
 
-		$result = $my_listable->intersection([ 1, 3 ])->all();
+		$result = $my_listable->intersection([ 1, 3 ]);
 		$this->assertEquals($expectedResult, $result);
 	}
 
@@ -507,7 +528,7 @@ class ListableTest extends \PHPUnit_Framework_TestCase
 		$expectedResult = [ 1 ];
 		$my_listable = new \Listable\Listable( $testArray );
 
-		$result = $my_listable->intersection([ 1, 3 ], [ 1, 4 ], [ 1, 5 ])->all();
+		$result = $my_listable->intersection([ 1, 3 ], [ 1, 4 ], [ 1, 5 ]);
 		$this->assertEquals($expectedResult, $result);
 	}
 
@@ -516,7 +537,7 @@ class ListableTest extends \PHPUnit_Framework_TestCase
 		$expectedResult = [ 'foo' ];
 		$my_listable = new \Listable\Listable( $testArray );
 
-		$result = $my_listable->intersection([ 'foo', 'baz' ])->all();
+		$result = $my_listable->intersection([ 'foo', 'baz' ]);
 		$this->assertEquals($expectedResult, $result);
 	}
 
@@ -615,6 +636,30 @@ class ListableTest extends \PHPUnit_Framework_TestCase
 		$result = $my_listable->dropRightWhile( function( $item ) {
 			return 0 === $item;
 		} )->all();
+		$this->assertEquals($expectedResult, $result);
+	}
+
+	public function testListablePull() {
+		$testArray = [ 2, 3, 2, 1, 4 ];
+		$expectedResult = [ 3, 4 ];
+		$my_listable = new \Listable\Listable( $testArray );
+
+		$result = $my_listable->pull( [ 2, 1 ] )->all();
+		$this->assertEquals($expectedResult, $result);
+	}
+
+	public function testListablePullWithAssocArray() {
+		$testArray = [
+			[ 'name' => 'John', 'age' => 28 ],
+			[ 'name' => 'Lucy', 'age' => 26 ]
+		];
+		$expectedResult = [
+			[ 'name' => 'John' ],
+			[ 'name' => 'Lucy' ]
+		];
+		$my_listable = new \Listable\Listable( $testArray );
+
+		$result = $my_listable->pull( [ 'age' ] )->all();
 		$this->assertEquals($expectedResult, $result);
 	}
 

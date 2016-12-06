@@ -40,11 +40,18 @@ class Loops {
 		return $prev;
 	}
 
-	public static function flatten( $items ) {
-		return is_array( $items ) ?
-		array_reduce( $items, function ( $prev, $next ) {
-			return array_merge( $prev, self::flatten( $next ) );
-		},[] ) : [ $items ];
+	public static function flatten( $items, $depth ) {
+		return self::reduce( $items, function ( $result, $item ) use ( $depth ) {
+
+			if ( ! is_array( $item ) ) {
+				return array_merge( $result, [ $item ] );
+			} elseif ( $depth === 1 ) {
+				return array_merge( $result, array_values( $item ) );
+			} else {
+				return array_merge( $result, self::flatten( $item, $depth - 1 ) );
+			}
+
+		}, []);
 	}
 
 	public static function each( $items, $callback ) {
