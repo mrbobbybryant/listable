@@ -604,12 +604,18 @@ class Listable {
 	 */
 	public function pull( $values ) {
 		$this->items = Loops::map( $this->items, function( $item, $index ) use( $values ) {
-			if ( ! Utilities::isAssociative( $item ) ) {
+			if ( ! Utilities::isAssociative( $item ) && ! is_object( $item ) ) {
 				if ( in_array( $item, $values ) ) {
 					return false;
 				}
 			} else if ( Utilities::isAssociative( $item ) ) {
 				return array_diff_key( $item, array_flip( (array) $values ) );
+			} else if ( is_object( $item ) ) {
+				Loops::each( $values, function( $value ) use( $item ) {
+					if ( property_exists( $item, $value ) ) {
+						unset( $item->$value);
+					}
+				} );
 			}
 
 			return $item;

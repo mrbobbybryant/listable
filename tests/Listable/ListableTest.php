@@ -663,4 +663,29 @@ class ListableTest extends \PHPUnit_Framework_TestCase
 		$this->assertEquals($expectedResult, $result);
 	}
 
+	public function testListablePullWithObjects() {
+		$team1 = new stdClass();
+		$team1->name = 'A';
+		$team1->score = 91;
+		$team1->points = 203;
+
+		$team2 = new stdClass();
+		$team2->name = 'B';
+		$team2->score = 86;
+		$team2->points = 203;
+
+		$team3 = new stdClass();
+		$team3->name = 'A';
+
+		$team4 = new stdClass();
+		$team4->name = 'B';
+
+		$testArray = [ $team1, $team2 ];
+		$expectedResult = [ $team3, $team4 ];
+		$my_listable = new \Listable\Listable( $testArray );
+
+		$result = $my_listable->pull( [ 'score', 'points' ] )->all();
+		$this->assertEquals($expectedResult, $result);
+	}
+
 }
