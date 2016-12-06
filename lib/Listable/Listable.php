@@ -22,7 +22,7 @@ class Listable {
 		if ( is_array( $items ) ) {
 			return $items;
 		} elseif ( $items instanceof self ) {
-			return $items->all();
+			return $items->toArray();
 		} elseif ( $this->isJson( $items )) {
 			return json_decode( $items, true );
 		}
@@ -36,22 +36,11 @@ class Listable {
 	}
 
 	/**
-	 * Get the collection of items as a plain array.
-	 *
-	 * @return array
-	 */
-	public function toArray() {
-		return $this->map( function ( $value ) {
-			return $value;
-		} );
-	}
-
-	/**
 	 * Get all of the items in the collection.
 	 *
 	 * @return array
 	 */
-	public function all() {
+	public function toArray() {
 		return $this->items;
 	}
 
@@ -225,11 +214,11 @@ class Listable {
 	public function contains( $search, $default = null ) {
 
 		if ( is_callable( $search ) ) {
-			$temp = $this->filter( $search )->all();
+			$temp = $this->filter( $search )->toArray();
 		} else {
 			$temp = $this->filter( function( $item ) use ( $search ) {
 				return $search === $item;
-			} )->all();
+			} )->toArray();
 		}
 
 		if ( ! empty( $temp ) ) {
@@ -257,7 +246,7 @@ class Listable {
 		}
 
 		if ( 0 < $this->length() && is_callable( $callback ) ) {
-			$temp = $this->filter( $callback )->all();
+			$temp = $this->filter( $callback )->toArray();
 			if ( ! empty( $temp ) ) {
 				return $temp[0];
 			} else if ( ! empty( $default ) ) {
@@ -473,7 +462,7 @@ class Listable {
 
 		$results = new self( $results );
 
-		return array_unique( $results->flatten()->all() );
+		return array_unique( $results->flatten()->toArray() );
 
 	}
 
@@ -496,7 +485,7 @@ class Listable {
 
 		$results = new self( $results );
 
-		return array_unique( $results->flatten()->all() );
+		return array_unique( $results->flatten()->toArray() );
 	}
 
 	/**

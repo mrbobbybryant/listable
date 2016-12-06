@@ -112,7 +112,7 @@ class ListableTest extends \PHPUnit_Framework_TestCase
 
 		$result = $my_listable->filter( function( $item ) {
 			return $item % 2 === 0;
-		} )->all();
+		} )->toArray();
 		$this->assertEquals($expectedResult, $result);
 	}
 
@@ -122,7 +122,7 @@ class ListableTest extends \PHPUnit_Framework_TestCase
 
 		$result = $my_listable->filter( function( $item ) {
 			return $item % 2 === 0;
-		} )->all();
+		} )->toArray();
 		$this->assertEquals($expectedResult, $result);
 	}
 
@@ -132,7 +132,7 @@ class ListableTest extends \PHPUnit_Framework_TestCase
 
 		$result = $my_listable->filter( function( $item ) {
 			return $item % 2 === 0;
-		} )->all();
+		} )->toArray();
 		$this->assertEquals($expectedResult, $result);
 	}
 
@@ -142,7 +142,7 @@ class ListableTest extends \PHPUnit_Framework_TestCase
 
 		$result = $my_listable->map( function( $item ) {
 			return $item + 1;
-		} )->all();
+		} )->toArray();
 		$this->assertEquals($expectedResult, $result);
 	}
 
@@ -152,7 +152,7 @@ class ListableTest extends \PHPUnit_Framework_TestCase
 
 		$result = $my_listable->map( function( $item ) {
 			return $item + 1;
-		} )->all();
+		} )->toArray();
 		$this->assertEquals($expectedResult, $result);
 	}
 
@@ -190,7 +190,7 @@ class ListableTest extends \PHPUnit_Framework_TestCase
 		$expectedResult = [ 1, 2, 3, 4 ];
 		$my_listable = new \Listable\Listable([ [ 1, 2 ], [ 3, 4 ] ]);
 
-		$result = $my_listable->flatten()->all();
+		$result = $my_listable->flatten()->toArray();
 		$this->assertEquals($expectedResult, $result);
 	}
 
@@ -198,7 +198,7 @@ class ListableTest extends \PHPUnit_Framework_TestCase
 		$expectedResult = [ 1, 2, 3, 4, 'foo', 'bar', 'baz' ];
 		$my_listable = new \Listable\Listable([ [ 1, 2 ], [ 3, 4 ], [ 'foo', [ 'bar', 'baz' ] ] ]);
 
-		$result = $my_listable->flatten()->all();
+		$result = $my_listable->flatten()->toArray();
 		$this->assertEquals($expectedResult, $result);
 	}
 
@@ -219,7 +219,7 @@ class ListableTest extends \PHPUnit_Framework_TestCase
 		];
 		$my_listable = new \Listable\Listable($testArray);
 
-		$result = $my_listable->flatten(1)->all();
+		$result = $my_listable->flatten(1)->toArray();
 		$this->assertEquals($expectedResult, $result);
 	}
 
@@ -237,7 +237,7 @@ class ListableTest extends \PHPUnit_Framework_TestCase
 
 		$result = $my_listable->flatMap( function( $item ) {
 			return $item + 1;
-		} )->all();
+		} )->toArray();
 		$this->assertEquals($expectedResult, $result);
 	}
 
@@ -249,7 +249,7 @@ class ListableTest extends \PHPUnit_Framework_TestCase
 		$expectedResult = [ 'yolo', 'grrr' ];
 		$my_listable = new \Listable\Listable( $testArray );
 
-		$result = $my_listable->pluck( 'bar' )->all();
+		$result = $my_listable->pluck( 'bar' )->toArray();
 		$this->assertEquals($expectedResult, $result);
 	}
 
@@ -266,7 +266,7 @@ class ListableTest extends \PHPUnit_Framework_TestCase
 		$expectedResult = [ 'yolo', 'grrr' ];
 		$my_listable = new \Listable\Listable( $testArray );
 
-		$result = $my_listable->pluck( 'bar' )->all();
+		$result = $my_listable->pluck( 'bar' )->toArray();
 		$this->assertEquals($expectedResult, $result);
 	}
 
@@ -294,7 +294,7 @@ class ListableTest extends \PHPUnit_Framework_TestCase
 		$expectedResult = [ ['yolo'], [ 'grrr', 'test'] ];
 		$my_listable = new \Listable\Listable( $testArray );
 
-		$result = $my_listable->pick( [ 'bar', 'something' ] )->all();
+		$result = $my_listable->pick( [ 'bar', 'something' ] )->toArray();
 		$this->assertEquals($expectedResult, $result);
 	}
 
@@ -318,7 +318,7 @@ class ListableTest extends \PHPUnit_Framework_TestCase
 		$expectedResult = [ $obj4, $obj3 ];
 		$my_listable = new \Listable\Listable( $testArray );
 
-		$result = $my_listable->pick( [ 'bar', 'something' ] )->all();
+		$result = $my_listable->pick( [ 'bar', 'something' ] )->toArray();
 		$this->assertEquals($expectedResult, $result);
 	}
 
@@ -339,7 +339,7 @@ class ListableTest extends \PHPUnit_Framework_TestCase
 		$expectedResult = [ 4 => [ 4.2 ], 6 => [ 6.1, 6.4 ] ];
 		$my_listable = new \Listable\Listable( $testArray );
 
-		$result = $my_listable->groupBy( 'floor' )->all();
+		$result = $my_listable->groupBy( 'floor' )->toArray();
 		$this->assertEquals($expectedResult, $result);
 	}
 
@@ -358,7 +358,7 @@ class ListableTest extends \PHPUnit_Framework_TestCase
 		];
 		$my_listable = new \Listable\Listable( $testArray );
 
-		$result = $my_listable->groupBy( 'floor', 'score' )->all();
+		$result = $my_listable->groupBy( 'floor', 'score' )->toArray();
 		$this->assertEquals($expectedResult, $result);
 	}
 
@@ -385,7 +385,7 @@ class ListableTest extends \PHPUnit_Framework_TestCase
 		];
 		$my_listable = new \Listable\Listable( $testArray );
 
-		$result = $my_listable->groupBy( 'floor', 'score' )->all();
+		$result = $my_listable->groupBy( 'floor', 'score' )->toArray();
 		$this->assertEquals($expectedResult, $result);
 	}
 
@@ -397,7 +397,7 @@ class ListableTest extends \PHPUnit_Framework_TestCase
 		];
 		$my_listable = new \Listable\Listable( $testArray );
 
-		$result = $my_listable->zip( [1,2], ['a','b'] )->all();
+		$result = $my_listable->zip( [1,2], ['a','b'] )->toArray();
 		$this->assertEquals($expectedResult, $result);
 	}
 
@@ -406,7 +406,7 @@ class ListableTest extends \PHPUnit_Framework_TestCase
 		$expectedResult = [ 'yolo', 'bolo' ];
 		$my_listable = new \Listable\Listable( $testArray );
 
-		$result = $my_listable->zip()->all();
+		$result = $my_listable->zip()->toArray();
 		$this->assertEquals($expectedResult, $result);
 	}
 
@@ -422,7 +422,7 @@ class ListableTest extends \PHPUnit_Framework_TestCase
 		];
 		$my_listable = new \Listable\Listable( $testArray );
 
-		$result = $my_listable->unzip()->all();
+		$result = $my_listable->unzip()->toArray();
 		$this->assertEquals($expectedResult, $result);
 	}
 
@@ -431,7 +431,7 @@ class ListableTest extends \PHPUnit_Framework_TestCase
 		$expectedResult = [ 'yolo', 'bolo' ];
 		$my_listable = new \Listable\Listable( $testArray );
 
-		$result = $my_listable->unzip()->all();
+		$result = $my_listable->unzip()->toArray();
 		$this->assertEquals($expectedResult, $result);
 	}
 
@@ -444,7 +444,7 @@ class ListableTest extends \PHPUnit_Framework_TestCase
 		];
 		$my_listable = new \Listable\Listable( $testArray );
 
-		$result = $my_listable->chunk(2)->all();
+		$result = $my_listable->chunk(2)->toArray();
 		$this->assertEquals($expectedResult, $result);
 	}
 
@@ -456,7 +456,7 @@ class ListableTest extends \PHPUnit_Framework_TestCase
 		];
 		$my_listable = new \Listable\Listable( $testArray );
 
-		$result = $my_listable->chunk(3)->all();
+		$result = $my_listable->chunk(3)->toArray();
 		$this->assertEquals($expectedResult, $result);
 	}
 
@@ -465,7 +465,7 @@ class ListableTest extends \PHPUnit_Framework_TestCase
 		$expectedResult = [ 'yolo', 'bolo', 'foo', 'bar', 'baz' ];
 		$my_listable = new \Listable\Listable( $testArray );
 
-		$result = $my_listable->chunk(0)->all();
+		$result = $my_listable->chunk(0)->toArray();
 		$this->assertEquals($expectedResult, $result);
 	}
 
@@ -474,7 +474,7 @@ class ListableTest extends \PHPUnit_Framework_TestCase
 		$expectedResult = [ 1, 2, 3 ];
 		$my_listable = new \Listable\Listable( $testArray );
 
-		$result = $my_listable->compact()->all();
+		$result = $my_listable->compact()->toArray();
 		$this->assertEquals($expectedResult, $result);
 	}
 
@@ -483,7 +483,7 @@ class ListableTest extends \PHPUnit_Framework_TestCase
 		$expectedResult = [ 'foo', 1, 'bar', 2, 3 ];
 		$my_listable = new \Listable\Listable( $testArray );
 
-		$result = $my_listable->compact()->all();
+		$result = $my_listable->compact()->toArray();
 		$this->assertEquals($expectedResult, $result);
 	}
 
@@ -546,7 +546,7 @@ class ListableTest extends \PHPUnit_Framework_TestCase
 		$expectedResult = [ 4, 3, 5 ];
 		$my_listable = new \Listable\Listable( $testArray );
 
-		$result = $my_listable->drop(2)->all();
+		$result = $my_listable->drop(2)->toArray();
 		$this->assertEquals($expectedResult, $result);
 	}
 
@@ -555,7 +555,7 @@ class ListableTest extends \PHPUnit_Framework_TestCase
 		$expectedResult = [ 2, 4, 3, 5 ];
 		$my_listable = new \Listable\Listable( $testArray );
 
-		$result = $my_listable->drop()->all();
+		$result = $my_listable->drop()->toArray();
 		$this->assertEquals($expectedResult, $result);
 	}
 
@@ -564,7 +564,7 @@ class ListableTest extends \PHPUnit_Framework_TestCase
 		$expectedResult = [ 1, 2, 4, 3, 5 ];
 		$my_listable = new \Listable\Listable( $testArray );
 
-		$result = $my_listable->drop(6)->all();
+		$result = $my_listable->drop(6)->toArray();
 		$this->assertEquals($expectedResult, $result);
 	}
 
@@ -573,7 +573,7 @@ class ListableTest extends \PHPUnit_Framework_TestCase
 		$expectedResult = [ 1, 2, 4 ];
 		$my_listable = new \Listable\Listable( $testArray );
 
-		$result = $my_listable->dropRight(2)->all();
+		$result = $my_listable->dropRight(2)->toArray();
 		$this->assertEquals($expectedResult, $result);
 	}
 
@@ -582,7 +582,7 @@ class ListableTest extends \PHPUnit_Framework_TestCase
 		$expectedResult = [ 1, 2, 4, 3 ];
 		$my_listable = new \Listable\Listable( $testArray );
 
-		$result = $my_listable->dropRight()->all();
+		$result = $my_listable->dropRight()->toArray();
 		$this->assertEquals($expectedResult, $result);
 	}
 
@@ -591,7 +591,7 @@ class ListableTest extends \PHPUnit_Framework_TestCase
 		$expectedResult = [ 1, 2, 4, 3, 5 ];
 		$my_listable = new \Listable\Listable( $testArray );
 
-		$result = $my_listable->dropRight(6)->all();
+		$result = $my_listable->dropRight(6)->toArray();
 		$this->assertEquals($expectedResult, $result);
 	}
 
@@ -602,7 +602,7 @@ class ListableTest extends \PHPUnit_Framework_TestCase
 
 		$result = $my_listable->dropRightWhile( function( $item ) {
 			return 4 > $item;
-		} )->all();
+		} )->toArray();
 		$this->assertEquals($expectedResult, $result);
 	}
 
@@ -613,7 +613,7 @@ class ListableTest extends \PHPUnit_Framework_TestCase
 
 		$result = $my_listable->dropRightWhile( function( $item ) {
 			return 0 === $item;
-		} )->all();
+		} )->toArray();
 		$this->assertEquals($expectedResult, $result);
 	}
 
@@ -624,7 +624,7 @@ class ListableTest extends \PHPUnit_Framework_TestCase
 
 		$result = $my_listable->dropWhile( function( $item ) {
 			return 4 > $item;
-		} )->all();
+		} )->toArray();
 		$this->assertEquals($expectedResult, $result);
 	}
 
@@ -635,7 +635,7 @@ class ListableTest extends \PHPUnit_Framework_TestCase
 
 		$result = $my_listable->dropRightWhile( function( $item ) {
 			return 0 === $item;
-		} )->all();
+		} )->toArray();
 		$this->assertEquals($expectedResult, $result);
 	}
 
@@ -644,7 +644,7 @@ class ListableTest extends \PHPUnit_Framework_TestCase
 		$expectedResult = [ 3, 4 ];
 		$my_listable = new \Listable\Listable( $testArray );
 
-		$result = $my_listable->pull( [ 2, 1 ] )->all();
+		$result = $my_listable->pull( [ 2, 1 ] )->toArray();
 		$this->assertEquals($expectedResult, $result);
 	}
 
@@ -659,7 +659,7 @@ class ListableTest extends \PHPUnit_Framework_TestCase
 		];
 		$my_listable = new \Listable\Listable( $testArray );
 
-		$result = $my_listable->pull( [ 'age' ] )->all();
+		$result = $my_listable->pull( [ 'age' ] )->toArray();
 		$this->assertEquals($expectedResult, $result);
 	}
 
@@ -684,7 +684,7 @@ class ListableTest extends \PHPUnit_Framework_TestCase
 		$expectedResult = [ $team3, $team4 ];
 		$my_listable = new \Listable\Listable( $testArray );
 
-		$result = $my_listable->pull( [ 'score', 'points' ] )->all();
+		$result = $my_listable->pull( [ 'score', 'points' ] )->toArray();
 		$this->assertEquals($expectedResult, $result);
 	}
 
