@@ -13,22 +13,28 @@ class Listable {
 	 * @param  mixed  $items
 	 * @return void
 	 */
-	public function __construct( $items = [] ) {
-		$this->__value = $this->format_list_items( $items );
+	public function __construct( $items = [], $objects = false ) {
+		$this->__value = $this->format_list_items( $items, $objects );
 	}
 
 	public static function of( $x ) {
 		return new self( $x );
 	}
 
-	protected function format_list_items( $items ) {
+	protected function format_list_items( $items, $objects ) {
 
 		if ( is_array( $items ) ) {
 			return $items;
 		} elseif ( $items instanceof self ) {
 			return $items->toArray();
+		} else if ( is_object( $items ) ) {
+			if ( $objects ) {
+				return (array) $items;
+			} else {
+				return [ $items ];
+			}
 		} elseif ( $this->isJson( $items )) {
-			return json_decode( $items, true );
+			return json_decode( $items, $objects );
 		}
 
 		return (array) $items;

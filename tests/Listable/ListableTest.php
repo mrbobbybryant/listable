@@ -2,6 +2,119 @@
 
 class ListableTest extends \PHPUnit_Framework_TestCase
 {
+	public function testListableCreationWithJSON() {
+		$obj1 = new stdClass();
+		$obj1->name = 'Bobby';
+		$obj1->age = 28;
+		$obj1->location = 'USA';
+		$obj1->member = true;
+
+		$obj2 = new stdClass();
+		$obj2->name = 'Lucy';
+		$obj2->age = 28;
+		$obj2->location = 'Canada';
+		$obj2->member = false;
+
+		$expectedResult = [ $obj1, $obj2 ];
+
+		$input = "[{\"name\":\"Bobby\",\"age\":28,\"location\":\"USA\",\"member\":true},{\"name\":\"Lucy\",\"age\":28,\"location\":\"Canada\",\"member\":false}]";
+		$my_listable = new \Listable\Listable($input);
+
+		$this->assertEquals($expectedResult, $my_listable->toArray());
+
+	}
+
+	public function testListableCreationWithJSONConvertObjects() {
+		$obj1 = new stdClass();
+		$obj1->name = 'Bobby';
+		$obj1->age = 28;
+		$obj1->location = 'USA';
+		$obj1->member = true;
+
+		$obj2 = new stdClass();
+		$obj2->name = 'Lucy';
+		$obj2->age = 28;
+		$obj2->location = 'Canada';
+		$obj2->member = false;
+
+		$expectedResult = [
+			[
+				'name'      =>  'Bobby',
+				'age'       =>  28,
+				'location'  =>  'USA',
+				'member'    =>  true
+			],
+			[
+				'name'      =>  'Lucy',
+				'age'       =>  28,
+				'location'  =>  'Canada',
+				'member'    =>  false
+			]
+		];
+
+		$input = "[{\"name\":\"Bobby\",\"age\":28,\"location\":\"USA\",\"member\":true},{\"name\":\"Lucy\",\"age\":28,\"location\":\"Canada\",\"member\":false}]";
+		$my_listable = new \Listable\Listable($input, true);
+
+		$this->assertEquals($expectedResult, $my_listable->toArray());
+
+	}
+
+	public function testListableCreationObjectInput() {
+		$obj1 = new stdClass();
+		$obj1->name = 'Bobby';
+		$obj1->age = 28;
+		$obj1->location = 'USA';
+		$obj1->member = true;
+
+		$expectedResult = [ $obj1 ];
+
+		$my_listable = new \Listable\Listable( $obj1, false );
+
+		$this->assertEquals($expectedResult, $my_listable->toArray());
+
+	}
+
+	public function testListableCreationObjectInputConvertToArray() {
+		$obj1 = new stdClass();
+		$obj1->name = 'Bobby';
+		$obj1->age = 28;
+		$obj1->location = 'USA';
+		$obj1->member = true;
+
+		$expectedResult = [
+			'name'      =>  'Bobby',
+			'age'       =>  28,
+			'location'  =>  'USA',
+			'member'    =>  true
+		];
+
+		$my_listable = new \Listable\Listable( $obj1, true );
+
+		$this->assertEquals($expectedResult, $my_listable->toArray());
+
+	}
+
+	public function testListableCreationArrayInput() {
+
+		$expectedResult = [ 1,2,3 ];
+
+		$my_listable = new \Listable\Listable( $expectedResult );
+
+		$this->assertEquals($expectedResult, $my_listable->toArray());
+
+	}
+
+	public function testListableCreationAnotherListableAsInput() {
+
+		$expectedResult = [ 1,2,3 ];
+
+		$another_listable = new \Listable\Listable( $expectedResult );
+		$my_listable = new \Listable\Listable( $another_listable );
+
+		$this->assertEquals($expectedResult, $my_listable->toArray());
+
+	}
+
 	public function testListableLengthCorrect() {
 		$expectedResult = 3;
 		$my_listable = new \Listable\Listable([1,2,3]);
