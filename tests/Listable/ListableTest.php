@@ -389,6 +389,55 @@ class ListableTest extends \PHPUnit_Framework_TestCase
 		$this->assertEquals($expectedResult, $result);
 	}
 
+	public function testListableGroupByArrayObjectsKeyNotFound() {
+		$team1 = new stdClass();
+		$team1->name = 'A';
+		$team1->score = 91;
+
+		$team2 = new stdClass();
+		$team2->name = 'B';
+		$team2->score = 86;
+
+		$testArray = [ $team1, $team2 ];
+		$my_listable = new \Listable\Listable( $testArray );
+
+		try {
+			$my_listable->groupBy( 'floor', 'base' )->toArray();
+		} catch (Exception $ex) {
+			$this->assertEquals($ex->getMessage(), 'The key provide to groupBy is not a valid object property.');
+			return;
+		}
+	}
+
+	public function testListableGroupByWithInvalidFunction() {
+		$testArray = [ 4.2, 6.1, 6.4 ];
+		$my_listable = new \Listable\Listable( $testArray );
+
+		try {
+			$my_listable->groupBy( 'floorred' )->toArray();
+		} catch (Exception $ex) {
+			$this->assertEquals($ex->getMessage(), 'Function expects the callback to be a callable function.');
+			return;
+		}
+	}
+
+	public function testListableGroupByAssocArraysWithInvalidKey() {
+		$testArray = [
+				[ 'team' => 'A', 'score' => 91 ],
+				[ 'team' => 'B', 'score' => 86 ],
+				[ 'team' => 'C', 'score' => 86 ]
+		];
+
+		$my_listable = new \Listable\Listable( $testArray );
+
+		try {
+			$my_listable->groupBy( 'floor', 'base' )->toArray();
+		} catch (Exception $ex) {
+			$this->assertEquals($ex->getMessage(), 'The key provide does not exist in the current collection.');
+			return;
+		}
+	}
+
 	public function testListableZip() {
 		$testArray = [ 'yolo', 'bolo' ];
 		$expectedResult = [
