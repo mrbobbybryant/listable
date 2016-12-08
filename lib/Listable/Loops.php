@@ -1,8 +1,18 @@
 <?php
 namespace Listable;
 
-class Loops {
-	public static function map( $items, $callback ) {
+trait Loops {
+
+	/**
+	 * Function allows you to loop over and modify each element in a listable.
+	 *
+	 * Function Iterates over all the elements within the listable,
+	 * applying the user provided callback to each item in the listable.
+	 * @param callable $callback The method to apply to each element in the array.
+	 *
+	 * @return array
+	 */
+	public function _map( $items, $callback ) {
 		$results = [];
 		$index = 0;
 
@@ -14,7 +24,16 @@ class Loops {
 		return $results;
 	}
 
-	public static function filter( $items, $callback ) {
+	/**
+	 * Function allows you to filter a listable to a subset of data.
+	 *
+	 * Function Iterates over all the elements within the listable,
+	 * updating the listable's content to an array of all elements the predicate returns truthy for.
+	 * @param callable $callback The method to apply to each element in the array.
+	 *
+	 * @return array
+	 */
+	public function _filter( $items, $callback ) {
 		$results = [];
 		$index = 0;
 
@@ -29,7 +48,7 @@ class Loops {
 		return $results;
 	}
 
-	public static function reduce( $items, $callback, $default ) {
+	public function _reduce( $items, $callback, $default ) {
 		$prev = ( is_null( $default ) ) ? 0 : $default;
 		$index = 0;
 
@@ -40,21 +59,26 @@ class Loops {
 		return $prev;
 	}
 
-	public static function flatten( $items, $depth ) {
-		return self::reduce( $items, function ( $result, $item ) use ( $depth ) {
+	/**
+	 * Function converts a multidimensional array into a standard single array.
+	 *
+	 * @return array
+	 */
+	public function _flatten( $items, $depth ) {
+		return $this->_reduce( $items, function ( $result, $item ) use ( $depth ) {
 
 			if ( ! is_array( $item ) ) {
 				return array_merge( $result, [ $item ] );
 			} elseif ( $depth === 1 ) {
 				return array_merge( $result, array_values( $item ) );
 			} else {
-				return array_merge( $result, self::flatten( $item, $depth - 1 ) );
+				return array_merge( $result, $this->_flatten( $item, $depth - 1 ) );
 			}
 
-		}, []);
+		}, [] );
 	}
 
-	public static function each( $items, $callback ) {
+	public function each( $items, $callback ) {
 		foreach( $items as $key => $item ) {
 			$callback( $item, $key );
 		}

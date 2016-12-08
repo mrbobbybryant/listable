@@ -6,6 +6,12 @@ use SebastianBergmann\CodeCoverage\Util;
 use Symfony\Component\Config\Definition\Exception\Exception;
 
 class Listable {
+
+	use Utilities;
+	use Zip;
+	use Drop;
+	use Loops;
+
 	protected $__value;
 
 	/**
@@ -121,7 +127,7 @@ class Listable {
 	 * @return Listable This allows for method chaining.
 	 */
 	public function filter( $callback ) {
-		return self::of( Loops::filter( $this->__value, $callback ) );
+		return self::of( $this->_filter( $this->__value, $callback ) );
 	}
 
 	/**
@@ -134,11 +140,11 @@ class Listable {
 	 * @return Listable This allows for method chaining.
 	 */
 	public function map( $callback ) {
-		return self::of( Loops::map( $this->__value, $callback ) );
+		return self::of( $this->_map( $this->__value, $callback ) );
 	}
 
 	public function reduce( $callback, $default = null ) {
-		return Loops::reduce( $this->__value, $callback, $default );
+		return $this->_reduce( $this->__value, $callback, $default );
 	}
 
 	/**
@@ -147,7 +153,7 @@ class Listable {
 	 * @return $this Returns an instance of the listable. This allows for method chaining.
 	 */
 	public function flatten( $depth = 0 ) {
-		return self::of( Loops::flatten( $this->__value, $depth ) );
+		return self::of( $this->_flatten( $this->__value, $depth ) );
 	}
 
 	/**
@@ -162,8 +168,8 @@ class Listable {
 	 * @return $this Returns an instance of the listable. This allows for method chaining.
 	 */
 	public function flatMap( $callback ) {
-		$flat = Loops::flatten( $this->__value, $depth = 0 );
-		return self::of( Loops::map( $flat, $callback ) );
+		$flat = $this->_flatten( $this->__value, $depth = 0 );
+		return self::of( $this->_map( $flat, $callback ) );
 	}
 
 	/**
@@ -174,7 +180,7 @@ class Listable {
 	 * @return $this Returns an instance of the listable. This allows for method chaining.
 	 */
 	public function pluck( $key, $default = null ) {
-		return self::of( Loops::map( $this->__value, function( $item ) use ( $key ) {
+		return self::of( $this->_map( $this->__value, function( $item ) use ( $key ) {
 			if ( is_array( $item ) && array_key_exists( $key, $item ) ) {
 				return $item[ $key ];
 			}
@@ -196,8 +202,8 @@ class Listable {
 	 * @return $this Returns an instance of the listable. This allows for method chaining.
 	 */
 	public function pick( $keys, $default = null ) {
-		if ( ! Utilities::isMultidemensional( $this->__value ) && ! Utilities::containsObjects( $this->__value ) ) {
-			$temp = array_filter( Loops::map( $keys, function($key) {
+		if ( ! $this->isMultidemensional( $this->__value ) && ! $this->containsObjects( $this->__value ) ) {
+			$temp = array_filter( $this->_map( $keys, function( $key ) {
 				if ( array_key_exists( $key, $this->__value ) ) {
 					return $this->__value[$key];
 				}
@@ -211,10 +217,10 @@ class Listable {
 				return $default;
 			}
 		} else {
-			$this->__value = Loops::map( $this->__value, function( $item ) use($keys) {
+			$this->__value = $this->_map( $this->__value, function( $item ) use($keys) {
 				if ( is_object( $item ) ) {
 					$temp = new \stdClass();
-					Loops::each( $keys, function( $key ) use ( $item, $temp ) {
+					$this->each( $keys, function( $key ) use ( $item, $temp ) {
 						if ( property_exists( $item, $key ) ) {
 							$temp->{$key} = $item->$key;
 						}
@@ -224,7 +230,7 @@ class Listable {
 				}
 
 				if ( is_array( $item ) ) {
-					return array_filter( Loops::map( $keys, function($key) use($item) {
+					return array_filter( $this->_map( $keys, function($key) use($item) {
 						if ( is_array( $item ) && array_key_exists( $key, $item ) ) {
 							return $item[$key];
 						}
@@ -270,7 +276,7 @@ class Listable {
 	}
 
 	public function sum() {
-		return Loops::reduce( $this->__value, function( $prev, $next ) {
+		return $this->_reduce( $this->__value, function( $prev, $next ) {
 			return $prev + $next;
 		}, 0 );
 	}
@@ -320,8 +326,8 @@ class Listable {
 			throw new \Exception('Function expects the callback to be a callable function.');
 		}
 
-		return self::of( Loops::reduce( $this->toArray(), function( $prev, $next, $index, $arr ) use ( $callback, $key ) {
-			if ( Utilities::isAssociative( $next ) && ! is_null( $key ) ) {
+		return self::of( $this->_reduce( $this->toArray(), function( $prev, $next, $index, $arr ) use ( $callback, $key ) {
+			if ( $this->isAssociative( $next ) && ! is_null( $key ) ) {
 				$result = $this->groupByAssocArray( $next, $callback, $key );
 				$prev[$result][] = $next;
 				return $prev;
@@ -332,7 +338,7 @@ class Listable {
 				$prev[$result][] = $next;
 				return $prev;
 			}
-			if ( ! Utilities::isAssociative( $arr ) && ! Utilities::isMultidemensional( $arr ) ) {
+			if ( ! $this->isAssociative( $arr ) && ! $this->isMultidemensional( $arr ) ) {
 				$result = $this->groupByStandardArray( $next, $callback );
 				$prev[$result][] = $next;
 				return $prev;
@@ -375,20 +381,7 @@ class Listable {
 	 * @return Listable This allows for method chaining.
 	 */
 	public function zip() {
-		$length = count( func_get_args() );
-
-		if ( 0 === $length ) {
-			throw new Exception( 'Zip expects at least one array as an argument.' );
-		}
-
-		$args = array_merge( [ $this->__value ], func_get_args() );
-		return self::of( Loops::reduce( $args, function( $prev, $next ) {
-			for( $i = 0; $i < count( $next ); $i++ ){
-				$prev[$i][] = $next[$i];
-			}
-			return $prev;
-		}, [] ) );
-
+		return self::of( call_user_func_array( [ $this, '_zip' ], func_get_args() ) );
 	}
 
 	/**
@@ -400,17 +393,7 @@ class Listable {
 	 * @return Listable This allows for method chaining.
 	 */
 	public function unzip() {
-		if ( ! Utilities::isMultidemensional( $this->__value ) ) {
-			throw new Exception( 'Unzip can only be called on a multidimensional array.' );
-		}
-
-		return self::of( Loops::reduce( $this->__value, function( $prev, $next ) {
-			for( $i = 0; $i < count( $next ); $i++ ){
-				$prev[$i][] = $next[$i];
-			}
-			return $prev;
-		}, [] ) );
-
+		return self::of( call_user_func_array( [ $this, '_unzip' ], func_get_args() ) );
 	}
 
 	/**
@@ -425,27 +408,7 @@ class Listable {
 	 * @return Listable This allows for method chaining.
 	 */
 	public function zipWith( $iterator ) {
-		$length = count( func_get_args() );
-
-		if ( ! is_callable( $iterator ) ) {
-			throw new \InvalidArgumentException( 'zipWith expects the first argument to be a valid callback function.' );
-		}
-
-		if ( 2 > $length ) {
-			throw new \InvalidArgumentException( 'zipWith expects at least one array as an argument.' );
-		}
-
-		$args = array_merge( [ $this->__value ], array_slice( func_get_args(), 1, $length ) );
-		$items = Loops::reduce( $args, function( $prev, $next ) {
-			for( $i = 0; $i < count( $next ); $i++ ){
-				$prev[$i][] = $next[$i];
-			}
-			return $prev;
-		}, [] );
-
-		return self::of( Loops::map( $items, function( $item ) use ( $iterator ) {
-			return call_user_func_array( $iterator, $item );
-		} ) );
+		return self::of( call_user_func_array( [ $this, '_zipwith' ], func_get_args() ) );
 	}
 
 	/**
@@ -464,7 +427,7 @@ class Listable {
 			$result = new \stdClass();
 			$result->items = [];
 			$result->pointer = 0;
-			$results = Loops::reduce( $this->__value, function( $prev, $next ) use ( $size ) {
+			$results = $this->_reduce( $this->__value, function( $prev, $next ) use ( $size ) {
 				$prev->items[ $prev->pointer ][] = $next;
 				if ( $size === count( $prev->items[ $prev->pointer ] ) ) {
 					$prev->pointer++;
@@ -514,9 +477,8 @@ class Listable {
 			return ! in_array( $item, $array );
 		} ] );
 
-		$results = new self( $results );
 
-		return array_unique( $results->flatten()->toArray() );
+		return array_unique( $this->_flatten( $results, $depth = 0 ) );
 
 	}
 
@@ -563,8 +525,8 @@ class Listable {
 	 * @return int
 	 */
 	protected function compareArrayItems( $arrays, $items, $iterator ) {
-		return Loops::reduce( $arrays, function( $prev, $array ) use( $items, $iterator ) {
-			$prev[] = Loops::filter( $items, function( $item ) use ( $array, $iterator ) {
+		return $this->_reduce( $arrays, function( $prev, $array ) use( $items, $iterator ) {
+			$prev[] = $this->_filter( $items, function( $item ) use ( $array, $iterator ) {
 				if ( $iterator( $item, $array ) ) {
 					return $item;
 				}
@@ -573,86 +535,6 @@ class Listable {
 			return $prev;
 
 		}, []);
-	}
-
-	/**
-	 * Function creates a slice of array with n elements dropped from the beginning.
-	 *
-	 * @param int $size The number of elements to drop from the beginning of the array.
-	 *
-	 * @return Listable This allows for method chaining.
-	 */
-	public function drop( $size = 1 ) {
-		if ( $size <= $this->length() ) {
-			return self::of( array_slice( $this->__value, $size, count( $this->__value ) ) );
-		}
-
-		return self::of( $this->__value );
-	}
-
-	/**
-	 * Function creates a slice of array with n elements dropped from the beginning.
-	 *
-	 * @param int $size The number of elements to drop from the end of the array.
-	 *
-	 * @return $this Returns an instance of the listable. This allows for method chaining.
-	 */
-	public function dropRight( $size = 1 ) {
-		$length = count( $this->__value );
-
-		if ( $size <= $length ) {
-			$size = $length - $size;
-			$slice = $length * -1;;
-			return self::of( array_slice( $this->__value, $slice, $size ) );
-		}
-
-		return self::of( $this->__value );
-	}
-
-	/**
-	 * Function creates a slice of array excluding elements dropped from the beginning until
-	 * the iterator returns false. The iterator is passed the $iterator and the index of
-	 * current item.
-	 *
-	 * @param callable $iterator The function to test each value again. Must return true or false.
-	 *
-	 * @throws \InvalidArgumentException if the provided argument is not a callable function.
-	 *
-	 * @return Listable This allows for method chaining.
-	 */
-	public function dropWhile( $iterator ) {
-		if ( ! is_callable( $iterator ) ) {
-			throw new \InvalidArgumentException( 'dropWhile expects the provided argument to be a valid callback function. ' );
-		}
-
-		$results = Loops::map( $this->__value, $iterator );
-		$index = array_search( false, $results );
-
-		return $this->drop( $index );
-	}
-
-	/**
-	 * Function creates a slice of array excluding elements dropped from the end until
-	 * the iterator returns false. The iterator is passed the $iterator and the index of
-	 * current item.
-	 *
-	 * @param callable $iterator The function to test each value again. Must return true or false.
-	 *
-	 * @throws \InvalidArgumentException if the provided argument is not a callable function.
-	 *
-	 * @return $this Returns an instance of the listable. This allows for method chaining.
-	 */
-	public function dropRightWhile( $iterator ) {
-
-		if ( ! is_callable( $iterator ) ) {
-			throw new \InvalidArgumentException( 'dropWhile expects the provided argument to be a valid callback function.' );
-		}
-
-		$results = Loops::map( $this->__value, $iterator );
-		$index = array_search( false, $results );
-		$slice = ( 0 === $index ) ? 0 : $index + 1;
-
-		return $this->dropRight( $slice );
 	}
 
 	/**
@@ -673,15 +555,15 @@ class Listable {
 			throw new \InvalidArgumentException( 'Pull expects the provided argument to be of type array.' );
 		}
 
-		$this->__value = Loops::map( $this->__value, function( $item, $index ) use( $values ) {
-			if ( ! Utilities::isAssociative( $item ) && ! is_object( $item ) ) {
+		$this->__value = $this->_map( $this->__value, function( $item, $index ) use( $values ) {
+			if ( ! $this->isAssociative( $item ) && ! is_object( $item ) ) {
 				if ( in_array( $item, $values ) ) {
 					return false;
 				}
-			} else if ( Utilities::isAssociative( $item ) ) {
+			} else if ( $this->isAssociative( $item ) ) {
 				return array_diff_key( $item, array_flip( (array) $values ) );
 			} else if ( is_object( $item ) ) {
-				Loops::each( $values, function( $value ) use( $item ) {
+				$this->each( $values, function( $value ) use( $item ) {
 					if ( property_exists( $item, $value ) ) {
 						unset( $item->$value);
 					}

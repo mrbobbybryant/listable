@@ -1,8 +1,8 @@
 <?php
 namespace Listable;
 
-class Utilities {
-	public static function isAssociative( $array ) {
+trait Utilities {
+	public function isAssociative( $array ) {
 		if ( is_object( $array ) ) {
 			return false;
 		}
@@ -18,7 +18,7 @@ class Utilities {
 		return false;
 	}
 
-	public static function isMultidemensional( $array ) {
+	public function isMultidemensional( $array ) {
 		foreach ( $array as $arr ) {
 			if ( is_array( $arr ) ) {
 				return true;
@@ -27,7 +27,7 @@ class Utilities {
 		return false;
 	}
 
-	public static function containsObjects( $array ) {
+	public function containsObjects( $array ) {
 		foreach ( $array as $arr ) {
 			if ( is_object( $arr ) ) {
 				return true;
