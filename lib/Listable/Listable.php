@@ -3,6 +3,7 @@
 namespace Listable;
 
 use SebastianBergmann\CodeCoverage\Util;
+use Symfony\Component\Config\Definition\Exception\Exception;
 
 class Listable {
 	protected $__value;
@@ -17,10 +18,30 @@ class Listable {
 		$this->__value = $this->format_list_items( $items, $objects );
 	}
 
+	/**
+	 * A static constructor to creating new Listable Instances.
+	 *
+	 * This function is used internally, and externally to set the internal value properties value. This function
+	 * accepts Arrays, Objects, and JSON,
+	 *
+	 * @param mixed $x Then data to convert to a listable.
+	 *
+	 * @return Listable
+	 */
 	public static function of( $x ) {
 		return new self( $x );
 	}
 
+	/**
+	 * Internal function used by the constructor to format and parse the input data correctly before setting it
+	 * as the Listable's value.
+	 *
+	 * @param mixed $items Items to insert into Listable wrapper.
+	 * @param bool $objects Useful when inserting Objects and JSON. If set to true then the Object and JSON Objects will
+	 * be converted to Associative arrays. By default Object and JSON Object remain objects.
+	 *
+	 * @return array|mixed|object
+	 */
 	protected function format_list_items( $items, $objects ) {
 
 		if ( is_array( $items ) ) {
@@ -40,6 +61,14 @@ class Listable {
 		return (array) $items;
 	}
 
+	/**
+	 * Function checks to see if a Listable input value is JSON. This is used by the constructor to determine who
+	 * to handle certain input data types.
+	 *
+	 * @param mixed $string The data submitted to the constructor.
+	 *
+	 * @return bool True is $string is found to be JSON. Otherwise it returns false.
+	 */
 	protected function isJson( $string ) {
 		json_decode($string);
 		return ( json_last_error() == JSON_ERROR_NONE );
@@ -72,9 +101,14 @@ class Listable {
 		return json_encode( $this->__value );
 	}
 
+	/**
+	 * Function will merge an input array with the existing data found in $this->__value
+	 * @param array $new_items
+	 *
+	 * @return Listable This allows for method chaining.
+	 */
 	public function merge( $new_items ) {
-		$this->__value = array_merge( $this->__value, $new_items );
-		return $this;
+		return self::of( array_merge( $this->__value, $new_items ) );
 	}
 
 	/**
@@ -84,11 +118,10 @@ class Listable {
 	 * updating the listable's content to an array of all elements the predicate returns truthy for.
 	 * @param callable $callback The method to apply to each element in the array.
 	 *
-	 * @return $this Returns an instance of the listable. This allows for method chaining.
+	 * @return Listable This allows for method chaining.
 	 */
 	public function filter( $callback ) {
-		$this->__value = Loops::filter( $this->__value, $callback );
-		return $this;
+		return self::of( Loops::filter( $this->__value, $callback ) );
 	}
 
 	/**
@@ -98,11 +131,10 @@ class Listable {
 	 * applying the user provided callback to each item in the listable.
 	 * @param callable $callback The method to apply to each element in the array.
 	 *
-	 * @return $this Returns an instance of the listable. This allows for method chaining.
+	 * @return Listable This allows for method chaining.
 	 */
 	public function map( $callback ) {
-		$this->__value = Loops::map( $this->__value, $callback );
-		return $this;
+		return self::of( Loops::map( $this->__value, $callback ) );
 	}
 
 	public function reduce( $callback, $default = null ) {
@@ -115,8 +147,7 @@ class Listable {
 	 * @return $this Returns an instance of the listable. This allows for method chaining.
 	 */
 	public function flatten( $depth = 0 ) {
-		$this->__value = Loops::flatten( $this->__value, $depth );
-		return $this;
+		return self::of( Loops::flatten( $this->__value, $depth ) );
 	}
 
 	/**
@@ -132,8 +163,7 @@ class Listable {
 	 */
 	public function flatMap( $callback ) {
 		$flat = Loops::flatten( $this->__value, $depth = 0 );
-		$this->__value = Loops::map( $flat, $callback );
-		return $this;
+		return self::of( Loops::map( $flat, $callback ) );
 	}
 
 	/**
@@ -144,7 +174,7 @@ class Listable {
 	 * @return $this Returns an instance of the listable. This allows for method chaining.
 	 */
 	public function pluck( $key, $default = null ) {
-		$this->__value = Loops::map( $this->__value, function( $item ) use ( $key ) {
+		return self::of( Loops::map( $this->__value, function( $item ) use ( $key ) {
 			if ( is_array( $item ) && array_key_exists( $key, $item ) ) {
 				return $item[ $key ];
 			}
@@ -152,8 +182,7 @@ class Listable {
 			if ( is_object( $item )  && property_exists( $item, $key ) ) {
 				return $item->$key;
 			}
-		});
-		return $this;
+		} ) );
 	}
 
 	/**
@@ -284,7 +313,7 @@ class Listable {
 	 * @param callable $iterator The function used to determine how items should be grouped.
 	 * @param null $key (optional) Allows you to define which key the iterator should be applied to.
 	 *
-	 * @return $this Returns an instance of the listable. This allows for method chaining.
+	 * @return Listable This allows for method chaining.
 	 */
 	public function groupBy( $callback, $key = null ) {
 		if ( ! is_callable( $callback ) ) {
@@ -343,21 +372,23 @@ class Listable {
 	 * Function will combine all items from each index for all input arrays into a new array.
 	 * for example [1,2] and ['a', 'b'] would become [ [1,'a'], [2,'b'] ]
 	 *
-	 * @return $this Returns an instance of the listable. This allows for method chaining.
+	 * @return Listable This allows for method chaining.
 	 */
 	public function zip() {
+		$length = count( func_get_args() );
 
-		if ( 0 < count( func_get_args() ) ) {
-			$args = array_merge( [ $this->__value ], func_get_args() );
-			$this->__value = Loops::reduce( $args, function( $prev, $next ) {
-				for( $i = 0; $i < count( $next ); $i++ ){
-					$prev[$i][] = $next[$i];
-				}
-				return $prev;
-			}, [] );
+		if ( 0 === $length ) {
+			throw new Exception( 'Zip expects at least one array as an argument.' );
 		}
 
-		return $this;
+		$args = array_merge( [ $this->__value ], func_get_args() );
+		return self::of( Loops::reduce( $args, function( $prev, $next ) {
+			for( $i = 0; $i < count( $next ); $i++ ){
+				$prev[$i][] = $next[$i];
+			}
+			return $prev;
+		}, [] ) );
+
 	}
 
 	/**
@@ -366,24 +397,45 @@ class Listable {
 	 *
 	 * For example [ [1,'a', true], [2,'b', false] ] will become [ [1,2], ['a','b'], [true, false] ]
 	 *
-	 * @return $this Returns an instance of the listable. This allows for method chaining.
+	 * @return Listable This allows for method chaining.
 	 */
 	public function unzip() {
-
-		if ( Utilities::isMultidemensional( $this->__value ) ) {
-			$this->__value = Loops::reduce( $this->__value, function( $prev, $next ) {
-				for( $i = 0; $i < count( $next ); $i++ ){
-					$prev[$i][] = $next[$i];
-				}
-				return $prev;
-			}, [] );
+		if ( ! Utilities::isMultidemensional( $this->__value ) ) {
+			throw new Exception( 'Unzip can only be called on a multidimensional array.' );
 		}
 
-		return $this;
+		return self::of( Loops::reduce( $this->__value, function( $prev, $next ) {
+			for( $i = 0; $i < count( $next ); $i++ ){
+				$prev[$i][] = $next[$i];
+			}
+			return $prev;
+		}, [] ) );
+
 	}
 
-	public function zipWith( $iterator, $args ) {
-		$args = array_merge( [ $this->__value ], array_slice( func_get_args(), 1, count(func_get_args() ) ) );
+	/**
+	 * Function will zip multiple arrays together, and uses the $iterator function to zip them with.
+	 *
+	 * @param callable $iterator The function
+	 * @param array $args An unlimted number of arrays to zip. Function requires at least one.
+	 *
+	 * @throws \InvalidArgumentException if the first provided argument is not a callable function.
+	 * @throws \InvalidArgumentException if the provided arguments does not contain at least one type 'array'
+	 *
+	 * @return Listable This allows for method chaining.
+	 */
+	public function zipWith( $iterator ) {
+		$length = count( func_get_args() );
+
+		if ( ! is_callable( $iterator ) ) {
+			throw new \InvalidArgumentException( 'zipWith expects the first argument to be a valid callback function.' );
+		}
+
+		if ( 2 > $length ) {
+			throw new \InvalidArgumentException( 'zipWith expects at least one array as an argument.' );
+		}
+
+		$args = array_merge( [ $this->__value ], array_slice( func_get_args(), 1, $length ) );
 		$items = Loops::reduce( $args, function( $prev, $next ) {
 			for( $i = 0; $i < count( $next ); $i++ ){
 				$prev[$i][] = $next[$i];
@@ -391,10 +443,9 @@ class Listable {
 			return $prev;
 		}, [] );
 
-		$this->__value = Loops::map( $items, function( $item ) use ( $iterator ) {
-			return $iterator( $item );
-		} );
-		return $this;
+		return self::of( Loops::map( $items, function( $item ) use ( $iterator ) {
+			return call_user_func_array( $iterator, $item );
+		} ) );
 	}
 
 	/**
@@ -405,7 +456,7 @@ class Listable {
 	 *
 	 * @param int $size Defaults to zero.
 	 *
-	 * @return $this Returns an instance of the listable. This allows for method chaining.
+	 * @return Listable This allows for method chaining.
 	 */
 	public function chunk( $size = 0 ) {
 
@@ -421,10 +472,10 @@ class Listable {
 				return $prev;
 			}, $result );
 
-			$this->__value = $results->items;
+			return self::of( $results->items );
 		}
 
-		return $this;
+		return self::of( $this->__value );
 	}
 
 	/**
@@ -432,11 +483,10 @@ class Listable {
 	 *
 	 * Falsey values that this function removes are 0, false, '' (empty string), and null.
 	 *
-	 * @return $this Returns an instance of the listable. This allows for method chaining.
+	 * @return Listable This allows for method chaining.
 	 */
 	public function compact() {
-		$this->__value = array_values( array_filter( $this->__value ) );
-		Return $this;
+		return self::of( array_values( array_filter( $this->__value ) ) );
 	}
 
 	/**
@@ -447,13 +497,22 @@ class Listable {
 	 * This function would return [2], since the number 2 is not found inside any of the input
 	 * arrays. This function does not mutate the Listable's array. For that take a look at pull().
 	 *
+	 * @param mixed $arrays,... An unlimited number of additional array to compare. Requires at least one.
+	 *
+	 * @throws \InvalidArgumentException Function expects at least one array as an argument.
+	 *
 	 * @return array An array of all the differences.
 	 */
-	public function difference() {
+	public function difference( $arrays ) {
 		$arrays = func_get_args();
-		$results = $this->compareArrayItems( $arrays, $this->__value, function( $item, $array ) {
+
+		if ( ! is_array( $arrays[0] ) ) {
+			throw new \InvalidArgumentException( 'Difference expects at least one array as an argument.' );
+		}
+
+		$results = call_user_func_array( [ $this, 'compareArrayItems' ], [ $arrays, $this->__value, function( $item, $array ) {
 			return ! in_array( $item, $array );
-		} );
+		} ] );
 
 		$results = new self( $results );
 
@@ -469,14 +528,21 @@ class Listable {
 	 * This function would return [1], since the number 1 is found inside every arrays. This function
 	 * does not mutate the Listable's array.
 	 *
+	 * @param mixed $arrays,... An unlimited number of additional array to compare. Requires at least one.
+	 *
+	 * @throws \InvalidArgumentException Function expects at least one array as an argument.
+	 *
 	 * @return array An array of all the differences.
 	 */
-	public function intersection() {
+	public function intersection( $arrays ) {
 		$arrays = func_get_args();
 
-		$results = $this->compareArrayItems( $arrays, $this->__value, function( $item, $array ) {
+		if ( ! is_array( $arrays[0] ) ) {
+			throw new \InvalidArgumentException( 'Intersection expects at least one array as an argument.' );
+		}
+		$results = call_user_func_array( [ $this, 'compareArrayItems' ], [ $arrays, $this->__value, function( $item, $array ) {
 			return in_array( $item, $array );
-		} );
+		} ] );
 
 		$results = new self( $results );
 
@@ -514,14 +580,14 @@ class Listable {
 	 *
 	 * @param int $size The number of elements to drop from the beginning of the array.
 	 *
-	 * @return $this Returns an instance of the listable. This allows for method chaining.
+	 * @return Listable This allows for method chaining.
 	 */
 	public function drop( $size = 1 ) {
-		if ( $size <= count( $this->__value ) ) {
-			$this->__value = array_slice( $this->__value, $size, count( $this->__value ) );
+		if ( $size <= $this->length() ) {
+			return self::of( array_slice( $this->__value, $size, count( $this->__value ) ) );
 		}
 
-		return $this;
+		return self::of( $this->__value );
 	}
 
 	/**
@@ -537,10 +603,10 @@ class Listable {
 		if ( $size <= $length ) {
 			$size = $length - $size;
 			$slice = $length * -1;;
-			$this->__value = array_slice( $this->__value, $slice, $size );
+			return self::of( array_slice( $this->__value, $slice, $size ) );
 		}
 
-		return $this;
+		return self::of( $this->__value );
 	}
 
 	/**
@@ -550,13 +616,19 @@ class Listable {
 	 *
 	 * @param callable $iterator The function to test each value again. Must return true or false.
 	 *
-	 * @return $this Returns an instance of the listable. This allows for method chaining.
+	 * @throws \InvalidArgumentException if the provided argument is not a callable function.
+	 *
+	 * @return Listable This allows for method chaining.
 	 */
 	public function dropWhile( $iterator ) {
+		if ( ! is_callable( $iterator ) ) {
+			throw new \InvalidArgumentException( 'dropWhile expects the provided argument to be a valid callback function. ' );
+		}
+
 		$results = Loops::map( $this->__value, $iterator );
 		$index = array_search( false, $results );
-		$this->drop( $index );
-		return $this;
+
+		return $this->drop( $index );
 	}
 
 	/**
@@ -566,27 +638,41 @@ class Listable {
 	 *
 	 * @param callable $iterator The function to test each value again. Must return true or false.
 	 *
+	 * @throws \InvalidArgumentException if the provided argument is not a callable function.
+	 *
 	 * @return $this Returns an instance of the listable. This allows for method chaining.
 	 */
 	public function dropRightWhile( $iterator ) {
+
+		if ( ! is_callable( $iterator ) ) {
+			throw new \InvalidArgumentException( 'dropWhile expects the provided argument to be a valid callback function.' );
+		}
+
 		$results = Loops::map( $this->__value, $iterator );
 		$index = array_search( false, $results );
 		$slice = ( 0 === $index ) ? 0 : $index + 1;
-		$this->dropRight( $slice );
-		return $this;
+
+		return $this->dropRight( $slice );
 	}
 
 	/**
-	 * Function removes all given values or keys from the Listablr's array.
+	 * Function removes all given values or keys from the Listable's array.
 	 *
 	 * @param array $values An array of values to remove from array.
 	 *
 	 * This function can also accept an array of keys which can be used to remove items from
 	 * multidimensional arrays.
 	 *
-	 * @return $this Returns an instance of the listable. This allows for method chaining.
+	 * @throws \InvalidArgumentException if the provided argument is not of type array.
+	 *
+	 * @return Listable This allows for method chaining.
 	 */
 	public function pull( $values ) {
+
+		if ( ! is_array( $values ) ) {
+			throw new \InvalidArgumentException( 'Pull expects the provided argument to be of type array.' );
+		}
+
 		$this->__value = Loops::map( $this->__value, function( $item, $index ) use( $values ) {
 			if ( ! Utilities::isAssociative( $item ) && ! is_object( $item ) ) {
 				if ( in_array( $item, $values ) ) {
@@ -605,8 +691,7 @@ class Listable {
 			return $item;
 		} );
 
-		$this->__value = array_values( array_filter( $this->__value ) );
-		return $this;
+		return self::of( array_values( array_filter( $this->__value ) ) );
 	}
 
 }

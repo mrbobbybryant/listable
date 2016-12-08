@@ -565,11 +565,14 @@ class ListableTest extends \PHPUnit_Framework_TestCase
 
 	public function testListableZipWithoutArgs() {
 		$testArray = [ 'yolo', 'bolo' ];
-		$expectedResult = [ 'yolo', 'bolo' ];
 		$my_listable = new \Listable\Listable( $testArray );
 
-		$result = $my_listable->zip()->toArray();
-		$this->assertEquals($expectedResult, $result);
+		try {
+			$my_listable->zip()->toArray();
+		} catch (Exception $ex) {
+			$this->assertEquals($ex->getMessage(), 'Zip expects at least one array as an argument.');
+			return;
+		}
 	}
 
 	public function testListableUnZip() {
@@ -588,12 +591,30 @@ class ListableTest extends \PHPUnit_Framework_TestCase
 		$this->assertEquals($expectedResult, $result);
 	}
 
-	public function testListableUnZipWitoutArgs() {
-		$testArray = [ 'yolo', 'bolo' ];
-		$expectedResult = [ 'yolo', 'bolo' ];
+	public function testListableUnZipWithNonMultiDimensionalArray() {
+		$testArray = [
+				[ 'yolo', 1, 'a' ],
+				[ 'bolo', 2, 'b' ]
+		];
+		$expectedResult = [
+				[ 'yolo', 'bolo' ],
+				[ 1, 2 ],
+				[ 'a', 'b' ]
+		];
 		$my_listable = new \Listable\Listable( $testArray );
 
 		$result = $my_listable->unzip()->toArray();
+		$this->assertEquals($expectedResult, $result);
+
+	}
+
+	public function testListableZipWith() {
+		$expectedResult = [ 111,222 ];
+		$my_listable = new \Listable\Listable( [ 1, 2 ] );
+
+		$result = $my_listable->zipWith( function( $a, $b, $c ) {
+			return $a + $b + $c;
+		}, [ 10, 20 ], [ 100, 200 ] )->toArray();
 		$this->assertEquals($expectedResult, $result);
 	}
 
@@ -676,6 +697,19 @@ class ListableTest extends \PHPUnit_Framework_TestCase
 		$this->assertEquals($expectedResult, $result);
 	}
 
+	public function testListableDifferenceWithoutArguments() {
+		$testArray = [ 'foo', 'bar' ];
+		$my_listable = new \Listable\Listable( $testArray );
+
+		try {
+			$my_listable->difference( 'yolo' );
+		} catch (Exception $ex) {
+			$this->assertEquals($ex->getMessage(), 'Difference expects at least one array as an argument.');
+			return;
+		}
+
+	}
+
 	public function testListableIntersection() {
 		$testArray = [ 1, 2 ];
 		$expectedResult = [ 1 ];
@@ -701,6 +735,18 @@ class ListableTest extends \PHPUnit_Framework_TestCase
 
 		$result = $my_listable->intersection([ 'foo', 'baz' ]);
 		$this->assertEquals($expectedResult, $result);
+	}
+
+	public function testListableIntersectionWithoutArrayValue() {
+		$testArray = [ 'foo', 'bar' ];
+		$my_listable = new \Listable\Listable( $testArray );
+
+		try {
+			$my_listable->intersection( 'yolo' );
+		} catch (Exception $ex) {
+			$this->assertEquals($ex->getMessage(), 'Intersection expects at least one array as an argument.');
+			return;
+		}
 	}
 
 	public function testListableDrop() {
@@ -779,6 +825,19 @@ class ListableTest extends \PHPUnit_Framework_TestCase
 		$this->assertEquals($expectedResult, $result);
 	}
 
+	public function testListableDropRightWhileInvalidArguments() {
+		$testArray = [ 1, 2, 4, 3, 5 ];
+		$my_listable = new \Listable\Listable( $testArray );
+
+		try {
+			$my_listable->dropRightWhile( 'foeidh' )->toArray();
+		} catch (Exception $ex) {
+			$this->assertEquals($ex->getMessage(), 'dropWhile expects the provided argument to be a valid callback function.');
+			return;
+		}
+
+	}
+
 	public function testListableDropWhile() {
 		$testArray = [ 1, 2, 4, 3, 5 ];
 		$expectedResult = [ 4, 3, 5 ];
@@ -848,6 +907,19 @@ class ListableTest extends \PHPUnit_Framework_TestCase
 
 		$result = $my_listable->pull( [ 'score', 'points' ] )->toArray();
 		$this->assertEquals($expectedResult, $result);
+	}
+
+	public function testListablePullWithInvalidArgument() {
+		$testArray = [ 2, 3, 2, 1, 4 ];
+		$my_listable = new \Listable\Listable( $testArray );
+
+		try {
+			$my_listable->pull( 'yolo' )->toArray();
+		} catch (Exception $ex) {
+			$this->assertEquals($ex->getMessage(), 'Pull expects the provided argument to be of type array.');
+			return;
+		}
+
 	}
 
 }
